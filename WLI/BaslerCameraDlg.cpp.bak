@@ -1,0 +1,162 @@
+// BaslerCameraDlg.cpp : implementation file
+//
+
+#include "pch.h"
+#include "WLI.h"
+#include "BaslerCameraDlg.h"
+#include "afxdialogex.h"
+#include <afxwin.h>
+#include<pylon/PylonIncludes.h>
+#ifdef PYLON_WIN_BUILD
+#include<pylon/PylonGUI.h>
+#endif
+#include<string>
+
+using namespace Pylon;
+using namespace std;
+// BaslerCameraDlg dialog
+
+IMPLEMENT_DYNAMIC(BaslerCameraDlg, CResizableDialog)
+
+BaslerCameraDlg::BaslerCameraDlg(CWnd* pParent /*=nullptr*/)
+	: CResizableDialog(IDD_DIALOG15, pParent) {}
+
+BaslerCameraDlg::~BaslerCameraDlg() {}
+
+void BaslerCameraDlg::DoDataExchange(CDataExchange* pDX) {
+	CResizableDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_CAMERA, cDisplayImage);
+	DDX_Control(pDX, IDC_CAMERA_LIST, m_CameraDeviceListCtrl);
+}
+
+BEGIN_MESSAGE_MAP(BaslerCameraDlg, CResizableDialog)
+	ON_WM_CLOSE()
+	ON_WM_DESTROY()
+	ON_COMMAND(ID_REFRESH, &BaslerCameraDlg::OnViewRefresh)
+
+END_MESSAGE_MAP()
+
+// BaslerCameraDlg message handlers
+void BaslerCameraDlg::OnClose() {
+	//OnStop();
+	CResizableDialog::OnClose();
+}
+
+void BaslerCameraDlg::OnDestroy() {
+	CResizableDialog::OnDestroy();
+}
+
+BOOL BaslerCameraDlg::OnInitDialog() {
+	AddAnchor(IDC_CAMERA, TOP_LEFT, BOTTOM_RIGHT);
+
+	CResizableDialog::OnInitDialog();
+	ArrangeLayout();
+	OnViewRefresh();
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void BaslerCameraDlg::OnStart() {
+	SCtx Ctx;
+	Ctx.hWnd = cDisplayImage.GetSafeHwnd();
+	cDisplayImage.GetClientRect(Ctx.rc);
+	//pCam->StartStream(Ctx, pCam->SCaM.ID);
+}
+
+void BaslerCameraDlg::OnStop() {
+	SCtx Ctx;
+	Ctx.hWnd = cDisplayImage.GetSafeHwnd();
+	cDisplayImage.GetClientRect(Ctx.rc);
+	//pCam->StopStream(Ctx, pCam->SCaM.ID);
+}
+static const uint32_t c_countOfImagesToGrab = 100;
+
+void BaslerCameraDlg::OnViewRefresh() {
+	try {
+		// Refresh the list of all attached cameras.
+		EnumerateDevices();
+
+		// Update the GUI.
+
+		// Always update the device list and the image
+		EUpdateHint hint = EUpdateHint(UpdateHint_DeviceList | UpdateHint_Image);
+
+		if (m_camera.IsPylonDeviceAttached()) {
+			// in this SDI application the document will be reused.
+			// We need to update the window title, in case the camera has been removed.
+			hint = EUpdateHint(hint | UpdateHint_Feature);
+		}
+		else {
+			// in this SDI application the document will be reused.
+			// We need to update the window title, in case the camera has been removed.
+			CString s;
+			s.LoadString(AFX_IDS_UNTITLED);
+			//SetTitle(s);
+		}
+
+		//FillDeviceListCtrl(m_devices);
+	}
+	catch (const Pylon::GenericException& e) {
+		TRACE(_T("Error during Refresh: %s"), (LPCWSTR)CUtf82W(e.what()));
+		UNUSED(e);
+	}
+}
+
+int BaslerCameraDlg::EnumerateDevices() {
+	Pylon::DeviceInfoList_t devices;
+
+	try {
+		// Get the transport layer factory.
+		Pylon::CTlFactory& TlFactory = Pylon::CTlFactory::GetInstance();
+
+		// Get all attached cameras.
+		TlFactory.EnumerateDevices(devices);
+	}
+	catch (const Pylon::GenericException& e) {
+		UNUSED(e);
+		devices.clear();
+
+		TRACE(CUtf82W(e.what()));
+	}
+	int size = (int)devices.size(); //12222022 No Devices Found(Size = 0)
+	m_devices = devices;
+	FillDeviceListCtrl(devices);
+	// When calling this function, make sure to update the device list control,
+	// because its items store pointers to elements in the m_devices list.
+	return (int)m_devices.size();
+}
+
+void BaslerCameraDlg::FillDeviceListCtrl(Pylon::DeviceInfoList_t devices) {
+	// Remember selection before deleting items so it can be restored after refilling.
+	//const Pylon::String_t fullNameSelected = m_fullNameSelected;
+
+//   ASSERT(!m_updatingList);
+
+	m_updatingList = TRUE;
+
+	// Delete the device list items before refilling.
+	m_CameraDeviceListCtrl.DeleteAllItems();
+
+	if (!devices.empty()) {
+		int i = 0;
+		for (Pylon::DeviceInfoList_t::const_iterator it = devices.begin(); it != devices.end(); ++it) {
+			// Get the pointer to the current device info.
+			const Pylon::CDeviceInfo* const pDeviceInfo = &(*it);
+			LPCTSTR str = CUtf82W(pDeviceInfo->GetFriendlyName());
+			// Add the item to the list.
+			int nItem = m_CameraDeviceListCtrl.InsertItem(i++, CUtf82W(pDeviceInfo->GetFriendlyName()));
+
+			// Remember the pointer to the device info.
+			m_CameraDeviceListCtrl.SetItemData(nItem, (DWORD_PTR)pDeviceInfo);
+
+			// Restore selection if necessary.
+			/*if (pDeviceInfo->GetFullName() == fullNameSelected)
+			{
+				m_CameraDeviceListCtrl.SetItemState(nItem, LVIS_SELECTED, LVIS_SELECTED);
+				m_CameraDeviceListCtrl.SetSelectionMark(nItem);
+			}*/
+		}
+	}
+
+	m_updatingList = FALSE;
+}

@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WLI", "WLI\WLI.vcxproj", "{B4174674-2A8E-412F-BE24-655D9CCA405A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		Simul|x64 = Simul|x64
+		Simul|x86 = Simul|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Debug|x64.ActiveCfg = Debug|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Debug|x64.Build.0 = Debug|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Debug|x86.ActiveCfg = Debug|Win32
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Debug|x86.Build.0 = Debug|Win32
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Release|x64.ActiveCfg = Release|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Release|x64.Build.0 = Release|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Release|x86.ActiveCfg = Release|Win32
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Release|x86.Build.0 = Release|Win32
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Simul|x64.ActiveCfg = Simul|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Simul|x64.Build.0 = Simul|x64
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Simul|x86.ActiveCfg = Simul|Win32
+		{B4174674-2A8E-412F-BE24-655D9CCA405A}.Simul|x86.Build.0 = Simul|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8A6BFFE2-BCEE-46B1-B53F-8856A77E12A2}
+	EndGlobalSection
+EndGlobal

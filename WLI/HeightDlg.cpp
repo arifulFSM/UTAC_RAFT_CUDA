@@ -1,0 +1,218 @@
+#include "pch.h"
+#include "WLI.h"
+
+#include "PSI/ICC.h"
+#include "wdefine.h"
+#include "PSI/Strip.h"
+
+#include "afxdialogex.h"
+#include "HeightDlg.h"
+
+IMPLEMENT_DYNAMIC(CHeightDlg, CResizableDialog)
+
+void CHeightDlg::ShowPlot(int x, int y) {
+	IMGL::Slin lin;
+	IMGL::CIM16& Im = Strip.Im16um;
+	if (bHorz) Im.GetHLn(lin.ln, y);
+	else Im.GetVLn(lin.ln, x);
+	lin.maxmin();
+	lin.setprop(RGB(0, 182, 255)/*, IMGL::Slin::LINEC, 1*/);
+	cPlot.Clear();
+	cPlot.Plot(lin, 1);
+	cPlot.Redraw(TRUE);
+}
+
+CHeightDlg::CHeightDlg(CWnd* pParent /*=nullptr*/)
+	: CResizableDialog(IDD_DIALOG4, pParent) {}
+
+CHeightDlg::~CHeightDlg() {}
+
+void CHeightDlg::DoDataExchange(CDataExchange* pDX) {
+	CResizableDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_HEIGHTMAP, cPicWnd);
+	DDX_Control(pDX, IDC_FRINGE, cPlot);
+	DDX_Control(pDX, IDC_INFO, cInfo);
+}
+
+BEGIN_MESSAGE_MAP(CHeightDlg, CResizableDialog)
+	ON_MESSAGE(UM_HEIGHT_CALCED, &CHeightDlg::OnUmHeightCalced)
+	ON_BN_CLICKED(IDC_BUTTON1, &CHeightDlg::OnBnClickedButton1)
+	ON_MESSAGE(WL_MOUSEMOVE, &CHeightDlg::OnWlMousemove)
+	ON_BN_CLICKED(IDC_BUTTON2, &CHeightDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_CHECK1, &CHeightDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_BUTTON3, &CHeightDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CHeightDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON8, &CHeightDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_BUTTON5, &CHeightDlg::OnBnClickedButton5)
+END_MESSAGE_MAP()
+
+BOOL CHeightDlg::OnInitDialog() {
+	AddAnchor(IDC_INFO, TOP_LEFT, TOP_RIGHT);
+	AddAnchor(IDC_FRINGE, TOP_LEFT, TOP_RIGHT);
+	AddAnchor(IDC_HEIGHTMAP, TOP_LEFT, BOTTOM_RIGHT);
+	AddAnchor(IDC_BUTTON1, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON2, BOTTOM_RIGHT);
+	AddAnchor(IDC_BUTTON3, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON4, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON5, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON8, TOP_RIGHT);
+	AddAnchor(IDC_COLOR, TOP_RIGHT);
+	AddAnchor(IDC_RADIO1, TOP_RIGHT);
+	AddAnchor(IDC_RADIO10, TOP_RIGHT);
+	AddAnchor(IDC_RADIO11, TOP_RIGHT);
+	AddAnchor(IDC_RADIO12, TOP_RIGHT);
+	AddAnchor(IDC_RADIO13, TOP_RIGHT);
+	AddAnchor(IDC_CHECK1, TOP_RIGHT);
+	AddAnchor(IDC_FILTERS, TOP_RIGHT);
+	CResizableDialog::OnInitDialog();
+
+	ArrangeLayout();
+
+	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(!bHorz);
+
+	cPicWnd.hWNd = GetSafeHwnd();
+	cPicWnd.SetMouseMove(WL_MOUSEMOVE);
+
+	cPlot.fmtX = "%.2f";
+	cPlot.fmtY = "%.4f";
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+afx_msg LRESULT CHeightDlg::OnUmHeightCalced(WPARAM wParam, LPARAM lParam) {
+	IMGL::CIM16& Im = Strip.Im16um;
+	Im.Make24H();
+	cPicWnd.SetImg2(Im.Im8); // Copy operation [10/25/2020 yuenl]
+	cPicWnd.Invalidate(TRUE);
+
+	return 0;
+}
+
+void CHeightDlg::OnBnClickedButton1() {
+	const int nBin = 256;
+	int Bin[nBin];
+	if (!Strip.Im16um.Histo(Bin, nBin)) return;
+	IMGL::SPtS p;
+	IMGL::Slin lin;
+	for (int i = 0; i < nBin; i++) {
+		p.x = float(i + 1); p.y = float(Bin[i]);
+		lin.add(p);
+	}
+	lin.maxmin();
+
+	cPlot.Clear();
+	lin.setprop(RGB(64, 128, 128), IMGL::Slin::LINEC, 1);
+	cPlot.Plot(lin, 1);
+	cPlot.Redraw(TRUE);
+}
+
+afx_msg LRESULT CHeightDlg::OnWlMousemove(WPARAM wParam, LPARAM lParam) {
+	MTH::SPointf* pPt = (MTH::SPointf*)lParam;
+	if ((pPt->x < 0) || (pPt->x > 1.0f) || (pPt->y < 0) || (pPt->y > 1.0f)) return 0;
+
+	int sz = Strip.size(); if (sz < 1) return -1;
+	int wd, ht, bp; if (!Strip.GetDim(wd, ht, bp)) return -2;
+	X = int(pPt->x * wd), Y = int(pPt->y * ht);
+
+	cInfo.ShowWindow(SW_HIDE);
+	ShowPlot(X, Y);
+	cPlot.ShowWindow(SW_SHOW);
+
+	return 0;
+}
+
+void CHeightDlg::OnBnClickedButton2() {
+	// Height image information
+	cPlot.ShowWindow(SW_HIDE);
+	cInfo.SetWindowTextW(Strip.Im16um.Info());
+	cInfo.ShowWindow(SW_SHOW);
+}
+
+void CHeightDlg::OnBnClickedCheck1() {
+	bHorz = !((CButton*)GetDlgItem(IDC_CHECK1))->GetCheck();
+}
+
+void CHeightDlg::OnBnClickedButton3() {
+	IMGL::CIM16& Im = Strip.Im16um;
+	IMGL::CIM16 Im2 = Im;
+	if (Im.IsNull()) return;
+	float wl = Strip.wlen_um[WLI::WHTA] / 2.f;
+	int wd, ht, bpp, cnt = 0; Strip.GetDim(wd, ht, bpp);
+	// horizontal
+	for (int j = 0; j < ht; j++) {
+		float* p2 = Im2.GetPixelAddress(1, j);
+		float* p1 = p2 - 1, * p3 = p2 + 1;
+		float* po = Im.GetPixelAddress(1, j);
+		for (int i = 1; i < wd - 1; i++, p1++, p2++, p3++, po++) {
+			if (((*p2 - *p1) > wl) && ((*p2 - *p3) > wl)) {
+				*po = (*p1 + *p3) / 2.f; cnt++;
+			}
+		}
+	}
+	// vertical
+	for (int i = 0; i < wd; i++) {
+		for (int j = 1; j < ht - 1; j++) {
+			float* p2 = Im2.GetPixelAddress(i, j);
+			float* p1 = Im2.GetPixelAddress(i, j - 1);
+			float* p3 = Im2.GetPixelAddress(i, j + 1);
+			float* po = Im.GetPixelAddress(i, j);
+			if (((*p2 - *p1) > wl) && ((*p2 - *p3) > wl)) {
+				*po = (*p1 + *p3) / 2.f; cnt++;
+			}
+		}
+	}
+	if (cnt) {
+		Im.Make24H();
+		cPicWnd.SetImg2(Im.Im8); // Copy operation [10/25/2020 yuenl]
+		cPicWnd.Invalidate(TRUE);
+	}
+	else AfxMessageBox(L"Done");
+}
+
+void CHeightDlg::OnBnClickedButton4() {
+	IMGL::CIM16& Im = Strip.Im16um;
+	if (Im.IsNull()) return;
+	IMGL::CIM16 Im2 = Im;
+	float wl = -Strip.wlen_um[WLI::WHTA] / 2.f;
+	int wd, ht, bpp, cnt = 0; Strip.GetDim(wd, ht, bpp);
+	float* p1, * p2, * p3, * po;
+	// horizontal
+	for (int j = 0; j < ht; j++) {
+		p2 = Im2.GetPixelAddress(1, j);
+		p1 = p2 - 1;
+		p3 = p2 + 1;
+		po = Im.GetPixelAddress(1, j);
+		for (int i = 1; i < wd - 1; i++, p1++, p2++, p3++, po++) {
+			if (((*p2 - *p1) < wl) && ((*p2 - *p3) < wl)) {
+				*po = (*p1 + *p3) / 2.f; cnt++;
+			}
+		}
+	}
+	// vertical
+	for (int i = 0; i < wd; i++) {
+		for (int j = 1; j < ht - 1; j++) {
+			float* p2 = Im2.GetPixelAddress(i, j);
+			float* p1 = Im2.GetPixelAddress(i, j - 1);
+			float* p3 = Im2.GetPixelAddress(i, j + 1);
+			float* po = Im.GetPixelAddress(i, j);
+			if (((*p2 - *p1) < wl) && ((*p2 - *p3) < wl)) {
+				*po = (*p1 + *p3) / 2.f; cnt++;
+			}
+		}
+	}
+	if (cnt) {
+		Im.Make24H();
+		cPicWnd.SetImg2(Im.Im8); // Copy operation [10/25/2020 yuenl]
+		cPicWnd.Invalidate(TRUE);
+	}
+	else AfxMessageBox(L"Done.");
+}
+
+void CHeightDlg::OnBnClickedButton8() {
+	// TODO: Add your control notification handler code here
+}
+
+void CHeightDlg::OnBnClickedButton5() {
+	// TODO: Add your control notification handler code here
+}

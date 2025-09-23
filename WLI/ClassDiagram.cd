@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MOT::CTilt" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAABSBAAAIAAAAAAATIAAAAAAACAAAAABA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\Tilt.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MOT::CCOM">
+    <Position X="0.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAIIAAAAAQQAAgAEAAEIAAAAIgAAGAAAA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\COM.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MOT::CCOM_D">
+    <Position X="0.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAEIAAAAAAAAAAgAAIAAAAAAAIAAQGAAAA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\COM_D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CDev">
+    <Position X="6.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAACAQAAQAEAAoABAAABAgAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Dev.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="Cam" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="MOT::CMotor" Collapsed="true">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gUJhATAEUACEDRAEAAIgBBEAQAgIQIAcIFQABAAAEIQ=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\Motor.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="pCom" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="MOT::CMotorCtrl" Collapsed="true">
+    <Position X="3.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAJAAAAAEAQAAEAIAACAAAAAACAAIAAAAAAAAAAA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\MotorCtrl.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="stage" />
+      <Field Name="tilt" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="MOT::CStage" Collapsed="true">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABSACAAIAAQAAAASAAAAAECAAAAAAAAA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\Stage.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CLogSys" Collapsed="true">
+    <Position X="8" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAQAIAAAAIAAQAAAAICAAAAAAoAAAYCAIQAAIAAEAE=</HashCode>
+      <FileName>C:\TEMP\WLI\LOG\LogSys.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CAM::CCamDev">
+    <Position X="10.25" Y="1.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAAAAQCAAIIAAAACAAAEAAAAAAAFACAA=</HashCode>
+      <FileName>C:\TEMP\WLI\CAM\CamDev.h</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="pCm" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="CAM::CCamera">
+    <Position X="13.75" Y="1.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>QABBNIIgBAKIAoCAkBIIBQEQ0AARQABAAAiNIAEBiBA=</HashCode>
+      <FileName>C:\TEMP\WLI\CAM\Camera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="MOT::SMotPar" Collapsed="true">
+    <Position X="8" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAUAAAAAAQCAAAACAAIAEAgAAQAAAMAAAAEAAAAAA=</HashCode>
+      <FileName>C:\TEMP\WLI\MOTOR\Motor.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

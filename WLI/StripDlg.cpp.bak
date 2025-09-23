@@ -1,0 +1,782 @@
+#include "pch.h"
+#include "WLI.h"
+#include "WLIView.h"
+
+#include "MTH/Point3.h"
+#include "PSI/ICC.h"
+#include "PSI/PSpar.h"
+#include "PSI/Strip.h"
+#include "AcqDlg.h"
+#include "Recipe.h"
+#include "wdefine.h"
+#include "MoreSettingDlg.h"
+
+#include "afxdialogex.h"
+#include "StripDlg.h"
+
+#include<pylon/PylonIncludes.h>
+#ifdef PYLON_WIN_BUILD
+#include<pylon/PylonGUI.h>
+#endif
+#include<string>
+#include "../../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.33.31629/atlmfc/include/afx.h"
+
+using namespace Pylon;
+using namespace std;
+
+IMPLEMENT_DYNAMIC(CStripDlg, CResizableDialog)
+
+bool CStripDlg::Make(IMGL::Slin& lin, WLI::SFrng& F, WLI::FRP Ch, SROI& R) {
+	std::vector<float>& Zp = F.Z.Get(Ch); if (int(Zp.size()) < 1) return false;
+
+	int sz = int(R.Size());
+	int st = R.i1, ed = R.i2;
+	lin.resize(sz);
+	IMGL::SPtS* pP = &lin.ln.Pts[0];
+	float v, xmin, xmax, ymin, ymax;
+	float* pZ = F.Z.Get(Ch, st, F.Z.size());
+	float* pX = F.Z.Get(WLI::ZAXS, st, F.Z.size());
+	xmin = xmax = *pX;
+	ymin = ymax = *pZ;
+	for (int i = st; i < ed; i++, pP++, pX++, pZ++) {
+		if (*pZ == BADDATA) continue;
+		v = *pX;
+		pP->x = v; if (v < xmin) xmin = v; if (v > xmax) xmax = v;
+		v = *pZ;
+		pP->y = v; if (v < ymin) ymin = v; if (v > ymax) ymax = v;
+	}
+	lin.xmin = xmin; lin.xmax = xmax;
+	lin.ymin = ymin; lin.ymax = ymax;
+	return true;
+}
+
+void CStripDlg::ShowPlot(int x, int y) {
+	int sz = Strip.size(); if (sz < 1) return;
+	if ((x < 0) || (y < 0) || (x >= Strip.wd) || (y >= Strip.ht)) return;
+	int idx, mid = sz / 2;
+	float Rsl = BADDATA;
+	WLI::SFrng F;
+	WLI::SPSpar PsP;
+	WLI::FRP Ch = WLI::WHTA;
+	SROI R(sz), R1, R2, Rt;
+
+	bool bPChg = Rcp.bPChg;
+
+	PsP.SetConst(Strip.wlen_um[WLI::REDA], Strip.wlen_um[WLI::GRNA],
+		Strip.wlen_um[WLI::WHTA], Strip.UStep_um);
+	int inc = PsP.Inc[int(WLI::WHTA)]; if (inc < 1) { ASSERT(0); return; }
+	int inc2 = 2 * inc, inc3 = 3 * inc, inc4 = 4 * inc;
+
+	short nSmo = 0;
+	if (Rcp.bSmo) nSmo = Rcp.nSmo;
+	if (Rcp.bSmoHvy) nSmo = 2 * Rcp.nSmo;
+
+	const float PS1sin = PsP.PSsin[WLI::GRNA];
+	Strip.CollectRGBW(F, x, y, R);
+	if (nSmo) {
+		if (ICC.bWht) {
+			Strip.MakeZW(F, R);
+			F.Smooth(WLI::WHTA, nSmo, 3, R);
+		}
+		else {
+			if (ICC.bRed) F.Smooth(WLI::REDA, nSmo, 3, R);
+			if (ICC.bGrn) F.Smooth(WLI::GRNA, nSmo, 3, R);
+			if (ICC.bBlu) F.Smooth(WLI::BLUA, nSmo, 3, R);
+		}
+	}
+	std::string str;
+	WLI::SStat* pSt = &F.Z.St[Ch];
+	switch (Rcp.Mthd) {
+	case RCP::PS0:
+		if (!Rcp.bFindPChg) {
+			if (bPChg) idx = pSt->imn; else idx = pSt->imx;
+		}
+		else {
+			if ((pSt->fmax - pSt->fave) >= (pSt->fave - pSt->fmin)) {
+				idx = pSt->imx; bPChg = true;
+			}
+			else { idx = pSt->imn; bPChg = false; }
+		}
+		if ((idx >= inc2) && (idx < sz - inc2)) {
+			if (F.PhasePV5(Ch, WLI::PHS1, PsP, R)) {
+				Rsl = -F.PeakPhas(WLI::PHS1, idx - 2, idx + 2, bPChg, sz);
+			}
+			else Rsl = BADDATA;
+		}
+		break;
+	case RCP::PSI:
+		idx = Strip.GetMaxPeakIdx(Strip.wd / 2, Strip.ht / 2, Ch);
+		if ((idx > inc2) && (idx < sz - inc2)) {
+			Rsl = F.PeakPSI5(Ch, idx, inc, PS1sin, sz);
+		}
+		break;
+	case RCP::TW1:
+		PsP.SetConst(Strip.wlen_um[WLI::REDA], Strip.wlen_um[WLI::GRNA], Strip.wlen_um[WLI::WHTA], Strip.UStep_um);
+		idx = ICC.nIdx;
+		if ((idx > inc2) && (idx < sz - inc2)) {
+			float v = F.PeakTW1ex(idx, PsP, R, sz);
+			Rsl = v + Strip.Imgs[mid]->PzPos_um;
+		}
+		break;
+	case RCP::VIS:
+	default:
+		pSt = &F.Z.St[Ch];
+		if (!Rcp.bFindPChg) {
+			if (bPChg) idx = pSt->imn; else idx = pSt->imx;
+		}
+		else {
+			if ((pSt->fmax - pSt->fave) >= (pSt->fave - pSt->fmin)) {
+				idx = pSt->imx; bPChg = true;
+			}
+			else { idx = pSt->imn; bPChg = false; }
+		}
+		R1.SetI(idx, int(2.5f * inc), sz);
+		if (F.PhasePV5(Ch, WLI::PHS1, PsP, R1)) {
+			F.Smooth(WLI::VIS1, 1, 7, R1);
+			//////////////////////////////////////////////////////////////////////////
+			// peak max implementation
+			// Rsl = Strip.GetZPos(F.Z.St[WLI::VIS1].imx);
+			//////////////////////////////////////////////////////////////////////////
+			// peak grad implementation
+			Rt.SetI(F.Z.St[WLI::VIS1].imx, inc2, sz);
+			Rsl = F.PeakGrad(WLI::VIS1, Rt.i1, Rt.i2, sz);
+			//////////////////////////////////////////////////////////////////////////
+		}
+		else Rsl = BADDATA;
+		break;
+	}
+
+	R1 = R; R1.Inflate(inc2);
+	IMGL::Slin lin;
+	int wdw = 2 * (inc - 1) + 1; if (wdw < 3) wdw = 3;
+
+	cPlot.fmtX = "%.4f";
+	cPlot.Clear();
+	if ((ICC.nIdx > inc2) && (ICC.nIdx < sz - inc2)) {
+		cPlot.AddVLine(SVHLine(Strip.Imgs[ICC.nIdx]->PzPos_um, RGB(124, 155, 28)));
+	}
+	if (Rsl != BADDATA) cPlot.AddVLine(SVHLine(Rsl, RGB(255, 182, 182)));
+	if (ICC.bWht) {
+		if (Make(lin, F, Ch, R1)) {
+			lin.setprop(RGB(64, 64, 64), IMGL::Slin::LINEC, 1);
+			cPlot.Plot(lin, 1);
+			cPlot.AddHLine(SVHLine(F.Z.St[WLI::WHTA].fave, RGB(192, 192, 0)));
+		}
+	}
+	if (ICC.bRed) {
+		if (Make(lin, F, WLI::REDA, R1)) {
+			lin.setprop(RGB(192, 0, 0), IMGL::Slin::LINEC, 1);
+			cPlot.Plot(lin, 1);
+			cPlot.AddHLine(SVHLine(F.Z.St[WLI::REDA].fave, RGB(192, 192, 0)));
+		}
+	}
+	if (ICC.bGrn) {
+		if (Make(lin, F, WLI::GRNA, R1)) {
+			lin.setprop(RGB(0, 192, 0), IMGL::Slin::LINEC, 1);
+			cPlot.Plot(lin, 1);
+			cPlot.AddHLine(SVHLine(F.Z.St[WLI::GRNA].fave, RGB(192, 192, 0)));
+		}
+	}
+	if (ICC.bBlu) {
+		if (Make(lin, F, WLI::BLUA, R1)) {
+			lin.setprop(RGB(0, 0, 192), IMGL::Slin::LINEC, 1);
+			cPlot.Plot(lin, 1);
+			cPlot.AddHLine(SVHLine(F.Z.St[WLI::BLUA].fave, RGB(192, 192, 0)));
+		}
+	}
+	if (ICC.bPhs) {
+		if (Rcp.Mthd != RCP::TW1) {
+			if (Make(lin, F, WLI::PHS1, R1)) {
+				lin.setprop(RGB(56, 56, 192));
+				cPlot.Plot(lin, 2);
+			}
+		}
+		else {
+			if (0 && Make(lin, F, WLI::TMP1, R1)) {
+				lin.setprop(RGB(56, 88, 224));
+				cPlot.Plot(lin, 3);
+			}
+			if (1 && Make(lin, F, WLI::TMP2, R1)) {
+				lin.setprop(RGB(56, 224, 224));
+				cPlot.Plot(lin, 3);
+			}
+			if (1 && Make(lin, F, WLI::RSLT, R1)) {
+				lin.setprop(RGB(224, 88, 56));
+				cPlot.Plot(lin, 4);
+			}
+			if (0 && Make(lin, F, WLI::ORDR, R1)) {
+				lin.setprop(RGB(224, 88, 224));
+				cPlot.Plot(lin, 3);
+			}
+			if (ICC.bRed && Make(lin, F, WLI::PHS1, R1)) {
+				lin.setprop(RGB(196, 56, 56));
+				cPlot.Plot(lin, 2);
+			}
+			if (ICC.bGrn && Make(lin, F, WLI::PHS2, R1)) {
+				lin.setprop(RGB(56, 196, 56));
+				cPlot.Plot(lin, 2);
+			}
+		}
+	}
+	if (ICC.bVis) {
+		if (Make(lin, F, WLI::VIS1, R1)) {
+			lin.setprop(RGB(255, 182, 0));
+			//lin.setprop(RGB(255, 182, 0), IMGL::Slin::LINEC, 1);
+			cPlot.Plot(lin, 3);
+		}
+	}
+	cPlot.Redraw(TRUE);
+}
+
+void CStripDlg::Yld(DWORD nTime) {
+	ULONGLONG time1;
+	time1 = GetTickCount64();
+	while ((GetTickCount64() - time1) < nTime) {
+		MSG msg;
+		while (PeekMessage(&msg, NULL, NULL, NULL, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+}
+
+void CStripDlg::UpdateImage(int idx) {
+	int sz = Strip.size(); if (sz < 1) return;
+	if ((idx < 0) || (idx >= sz)) { return; }
+	ImT = Strip.Imgs[idx]->Im;
+	if (ICC.bWht) ImT.Select(true, true, true);
+	else ImT.Select(ICC.bRed, ICC.bGrn, ICC.bBlu);
+	//cPicWnd.SetImg2(Strip.Imgs[idx]->Im); // Copy operation [10/25/2020 yuenl]
+	cPicWnd.bErase = false;
+	cPicWnd.SetImg2(ImT); // Copy operation [10/25/2020 yuenl]
+	cPicWnd.Invalidate(FALSE);
+
+	UpdateUIMessages(idx);
+}
+
+void CStripDlg::UpdateUIMessages(int idx) {
+	int sz = Strip.size(); if (sz < 1) return;
+	if ((idx < 0) || (idx >= sz)) { ASSERT(0); return; }
+	CString str;
+	str.Format(_T("%d:%ld"), ICC.nIdx + 1, sz);
+	GetDlgItem(IDC_BUTTON3)->SetWindowTextW(str);
+	str.Format(_T("%.4f"), Strip.Imgs[idx]->PzPos_um);
+	GetDlgItem(IDC_BUTTON4)->SetWindowTextW(str);
+
+	Yld(5);
+}
+
+CStripDlg::CStripDlg(CWnd* pParent /*=nullptr*/)
+	: CResizableDialog(IDD_DIALOG8, pParent) {}
+
+CStripDlg::~CStripDlg() {}
+
+void CStripDlg::DoDataExchange(CDataExchange* pDX) {
+	CResizableDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_HEIGHTWND, cPicWnd);
+	DDX_Control(pDX, IDC_FRINGE, cPlot);
+	DDX_Control(pDX, IDC_REPORT, cReport);
+	DDX_Control(pDX, IDC_MSG, cMsg);
+	DDX_Control(pDX, IDC_MSG2, cMsg2);
+}
+
+BEGIN_MESSAGE_MAP(CStripDlg, CResizableDialog)
+	ON_MESSAGE(UM_STRIP_LOADED, &CStripDlg::OnUmStripLoaded)
+	ON_MESSAGE(WL_MOUSEMOVE, &CStripDlg::OnWlMousemove)
+	ON_BN_CLICKED(IDC_CHECK1, &CStripDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_CHECK2, &CStripDlg::OnBnClickedCheck2)
+	ON_BN_CLICKED(IDC_CHECK3, &CStripDlg::OnBnClickedCheck3)
+	ON_BN_CLICKED(IDC_CHECK4, &CStripDlg::OnBnClickedCheck4)
+	ON_BN_CLICKED(IDC_CHECK5, &CStripDlg::OnBnClickedCheck5)
+	ON_BN_CLICKED(IDC_CHECK6, &CStripDlg::OnBnClickedCheck6)
+	ON_BN_CLICKED(IDC_CHECK7, &CStripDlg::OnBnClickedCheck7)
+	ON_BN_CLICKED(IDC_BUTTON16, &CStripDlg::OnBnClickedButton16)
+	ON_BN_CLICKED(IDC_BUTTON21, &CStripDlg::OnBnClickedButton21)
+	ON_BN_CLICKED(IDC_BUTTON1, &CStripDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CStripDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CStripDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CStripDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CStripDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CStripDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON8, &CStripDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_RADIO2, &CStripDlg::OnBnClickedRadio2)
+	ON_BN_CLICKED(IDC_RADIO3, &CStripDlg::OnBnClickedRadio3)
+	ON_BN_CLICKED(IDC_BUTTON71, &CStripDlg::OnBnClickedButton71)
+	ON_BN_CLICKED(IDC_CHECK12, &CStripDlg::OnBnClickedCheck12)
+	ON_BN_CLICKED(IDC_CHECK13, &CStripDlg::OnBnClickedCheck13)
+	ON_BN_CLICKED(IDC_RADIO4, &CStripDlg::OnBnClickedRadio4)
+	ON_BN_CLICKED(IDC_RADIO9, &CStripDlg::OnBnClickedRadio9)
+	ON_BN_CLICKED(IDC_BUTTON78, &CStripDlg::OnBnClickedButton78)
+	ON_BN_CLICKED(IDC_BUTTON11, &CStripDlg::OnBnClickedButton11)
+	ON_BN_CLICKED(IDC_BUTTON88, &CStripDlg::OnBnClickedButton88)
+	ON_BN_CLICKED(IDC_BUTTON91, &CStripDlg::OnBnClickedButton91)
+	ON_BN_CLICKED(IDC_CHECK14, &CStripDlg::OnBnClickedCheck14)
+	ON_BN_CLICKED(IDC_BUTTON99, &CStripDlg::OnBnClickedButton99)
+	ON_BN_CLICKED(IDC_BUTTON100, &CStripDlg::OnBnClickedButton100)
+	ON_BN_CLICKED(IDC_BUTTON15, &CStripDlg::OnBnClickedButton15)
+END_MESSAGE_MAP()
+
+BOOL CStripDlg::OnInitDialog() {
+	AddAnchor(IDC_FRINGE, TOP_LEFT, TOP_RIGHT);
+	AddAnchor(IDC_REPORT, TOP_LEFT, TOP_RIGHT);
+	AddAnchor(IDC_HEIGHTWND, TOP_LEFT, BOTTOM_RIGHT);
+	AddAnchor(IDC_BUTTON1, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON11, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON16, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON2, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON21, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON3, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON4, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON5, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON6, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON71, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON78, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON8, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON88, BOTTOM_RIGHT);
+	AddAnchor(IDC_BUTTON91, TOP_RIGHT);
+	AddAnchor(IDC_BUTTON99, BOTTOM_RIGHT);
+	AddAnchor(IDC_BUTTON100, BOTTOM_RIGHT);
+	AddAnchor(IDC_CHECK1, TOP_RIGHT);
+	AddAnchor(IDC_CHECK12, TOP_RIGHT);
+	AddAnchor(IDC_CHECK13, TOP_RIGHT);
+	AddAnchor(IDC_CHECK2, TOP_RIGHT);
+	AddAnchor(IDC_CHECK3, TOP_RIGHT);
+	AddAnchor(IDC_CHECK4, TOP_RIGHT);
+	AddAnchor(IDC_CHECK14, TOP_RIGHT);
+	AddAnchor(IDC_CHECK5, TOP_RIGHT);
+	AddAnchor(IDC_CHECK6, TOP_RIGHT);
+	AddAnchor(IDC_CHECK7, TOP_RIGHT);
+	AddAnchor(IDC_RADIO2, TOP_RIGHT);
+	AddAnchor(IDC_RADIO3, TOP_RIGHT);
+	AddAnchor(IDC_RADIO4, TOP_RIGHT);
+	AddAnchor(IDC_RADIO9, TOP_RIGHT);
+	AddAnchor(IDC_METHOD, TOP_RIGHT);
+	AddAnchor(IDC_MEASUREMENT, TOP_RIGHT);
+	AddAnchor(IDC_SHOW, TOP_RIGHT);
+	AddAnchor(IDC_MSG, TOP_LEFT, TOP_RIGHT);
+
+	CResizableDialog::OnInitDialog();
+
+	ICC.bWht = true;
+
+	((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(ICC.bRed);
+	((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(ICC.bGrn);
+	((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(ICC.bBlu);
+	((CButton*)GetDlgItem(IDC_CHECK4))->SetCheck(ICC.bWht);
+	((CButton*)GetDlgItem(IDC_CHECK14))->SetCheck(Rcp.bFindPChg);
+	if (Rcp.bFindPChg) Rcp.bPChg = false;
+	((CButton*)GetDlgItem(IDC_CHECK12))->SetCheck(Rcp.bPChg);
+	((CButton*)GetDlgItem(IDC_CHECK5))->SetCheck(ICC.bPhs);
+	((CButton*)GetDlgItem(IDC_CHECK6))->SetCheck(ICC.bVis);
+	((CButton*)GetDlgItem(IDC_CHECK7))->SetCheck(Rcp.bSmo);
+
+	((CButton*)GetDlgItem(IDC_RADIO2))->SetCheck(false);
+	((CButton*)GetDlgItem(IDC_RADIO3))->SetCheck(false);
+	((CButton*)GetDlgItem(IDC_RADIO4))->SetCheck(false);
+	((CButton*)GetDlgItem(IDC_RADIO9))->SetCheck(false);
+	switch (Rcp.Mthd) {
+	case RCP::PS0: ((CButton*)GetDlgItem(IDC_RADIO3))->SetCheck(true); break;
+	case RCP::PSI: ((CButton*)GetDlgItem(IDC_RADIO4))->SetCheck(true); break;
+	case RCP::TW1: ((CButton*)GetDlgItem(IDC_RADIO9))->SetCheck(true); break;
+	default: ((CButton*)GetDlgItem(IDC_RADIO2))->SetCheck(true); break;
+	}
+
+	ArrangeLayout();
+
+	cPicWnd.hWNd = GetSafeHwnd();
+	cPicWnd.SetMouseMove(WL_MOUSEMOVE);
+
+	cPlot.fmtX = "%.4f";
+	cPlot.ShowWindow(SW_SHOW);
+	cReport.ShowWindow(SW_HIDE);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+afx_msg LRESULT CStripDlg::OnUmStripLoaded(WPARAM wParam, LPARAM lParam) {
+	Refresh();
+	return 0;
+}
+
+afx_msg LRESULT CStripDlg::OnWlMousemove(WPARAM wParam, LPARAM lParam) {
+	MTH::SPointf* pPt = (MTH::SPointf*)lParam;
+	if ((pPt->x < 0) || (pPt->x > 1.0f) || (pPt->y < 0) || (pPt->y > 1.0f)) return 0;
+
+	int sz = Strip.size(); if (sz < 1) return -1;
+	int wd, ht, bp; if (!Strip.GetDim(wd, ht, bp)) return -2;
+	X = int(pPt->x * wd), Y = int(pPt->y * ht);
+
+	cReport.ShowWindow(SW_HIDE);
+	ShowPlot(X, Y);
+	cPlot.ShowWindow(SW_SHOW);
+
+	return 0;
+}
+
+void CStripDlg::OnBnClickedCheck1() {
+	ICC.bRed = ((CButton*)GetDlgItem(IDC_CHECK1))->GetCheck();
+	if (ICC.bRed) {
+		ICC.bWht = false;
+		((CButton*)GetDlgItem(IDC_CHECK4))->SetCheck(ICC.bWht);
+	}
+	UpdateImage(ICC.nIdx);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck2() {
+	ICC.bGrn = ((CButton*)GetDlgItem(IDC_CHECK2))->GetCheck();
+	if (ICC.bGrn) {
+		ICC.bWht = false;
+		((CButton*)GetDlgItem(IDC_CHECK4))->SetCheck(ICC.bWht);
+	}
+	UpdateImage(ICC.nIdx);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck3() {
+	ICC.bBlu = ((CButton*)GetDlgItem(IDC_CHECK3))->GetCheck();
+	if (ICC.bBlu) {
+		ICC.bWht = false;
+		((CButton*)GetDlgItem(IDC_CHECK4))->SetCheck(ICC.bWht);
+	}
+	UpdateImage(ICC.nIdx);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck14() {
+	Rcp.bFindPChg = ((CButton*)GetDlgItem(IDC_CHECK14))->GetCheck();
+	if (Rcp.bFindPChg) {
+		Rcp.bPChg = false;
+		((CButton*)GetDlgItem(IDC_CHECK12))->SetCheck(Rcp.bPChg);
+	}
+	UpdateImage(ICC.nIdx);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck4() {
+	ICC.bWht = ((CButton*)GetDlgItem(IDC_CHECK4))->GetCheck();
+	if (ICC.bWht) {
+		ICC.bRed = ICC.bGrn = ICC.bBlu = false;
+		((CButton*)GetDlgItem(IDC_CHECK1))->SetCheck(ICC.bRed);
+		((CButton*)GetDlgItem(IDC_CHECK2))->SetCheck(ICC.bGrn);
+		((CButton*)GetDlgItem(IDC_CHECK3))->SetCheck(ICC.bBlu);
+	}
+	UpdateImage(ICC.nIdx);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck5() {
+	ICC.bPhs = ((CButton*)GetDlgItem(IDC_CHECK5))->GetCheck();
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck6() {
+	ICC.bVis = ((CButton*)GetDlgItem(IDC_CHECK6))->GetCheck();
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck7() {
+	if (((CButton*)GetDlgItem(IDC_CHECK7))->GetCheck()) {
+		if (!Rcp.bSmo) { Rcp.bSmo = true; Rcp.bSmoHvy = false; }
+		else { Rcp.bSmo = false; }
+	}
+	else Rcp.bSmo = false;
+	((CButton*)GetDlgItem(IDC_CHECK7))->SetCheck(Rcp.bSmo);
+	((CButton*)GetDlgItem(IDC_CHECK13))->SetCheck(Rcp.bSmoHvy);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedCheck13() {
+	if (((CButton*)GetDlgItem(IDC_CHECK13))->GetCheck()) {
+		if (!Rcp.bSmoHvy) { Rcp.bSmo = false; Rcp.bSmoHvy = true; }
+		else { Rcp.bSmoHvy = false; }
+	}
+	else Rcp.bSmoHvy = false;
+	((CButton*)GetDlgItem(IDC_CHECK7))->SetCheck(Rcp.bSmo);
+	((CButton*)GetDlgItem(IDC_CHECK13))->SetCheck(Rcp.bSmoHvy);
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedButton16() {
+	int sz = Strip.size(); if (sz < 1) return;
+	ICC.nIdx = sz / 2;
+	ShowPlot(X, Y);
+	UpdateImage(ICC.nIdx);
+	//UpdateUIMessages(ICC.nIdx);
+}
+
+void CStripDlg::OnBnClickedButton21() {
+	int sz = Strip.size(); if (sz < 1) return;
+	ICC.nIdx = Strip.GetMaxPeakIdx(Strip.wd / 2, Strip.ht / 2, WLI::WHTA);
+	ShowPlot(X, Y);
+	UpdateImage(ICC.nIdx);
+	//UpdateUIMessages(ICC.nIdx);
+}
+
+void CStripDlg::OnBnClickedButton1() {
+	int sz = Strip.size(); if (sz < 1) return;
+	bFrnSrchStop = FALSE;
+	while (!bFrnSrchStop) {
+		if (ICC.nIdx >= sz) ICC.nIdx = sz - 1;
+		ICC.nIdx--; if (ICC.nIdx < 0) { ICC.nIdx = 0; break; }
+		cPicWnd.bErase = false;
+		UpdateImage(ICC.nIdx);
+	}
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedButton2() {
+	int sz = Strip.size(); if (sz < 1) return;
+	if (ICC.nIdx >= sz) ICC.nIdx = sz - 1;
+	ICC.nIdx--; if (ICC.nIdx < 0) ICC.nIdx = 0;
+	ShowPlot(X, Y);
+	UpdateImage(ICC.nIdx);
+}
+
+void CStripDlg::OnBnClickedButton3() {
+	bFrnSrchStop = TRUE;
+}
+
+void CStripDlg::OnBnClickedButton4() {
+	bFrnSrchStop = TRUE;
+}
+
+void CStripDlg::OnBnClickedButton5() {
+	int sz = Strip.size(); if (sz < 1) return;
+	ICC.nIdx++; if (ICC.nIdx >= sz) ICC.nIdx = sz - 1;
+	if (ICC.nIdx < 0) ICC.nIdx = 0;
+	ShowPlot(X, Y);
+	UpdateImage(ICC.nIdx);
+}
+
+void CStripDlg::OnBnClickedButton6() {
+	int sz = Strip.size(); if (sz < 1) return;
+	bFrnSrchStop = FALSE;
+	while (!bFrnSrchStop) {
+		if (ICC.nIdx < 0) ICC.nIdx = 0;
+		ICC.nIdx++; if (ICC.nIdx >= sz) { ICC.nIdx = sz - 1; break; }
+		UpdateImage(ICC.nIdx);
+	}
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedButton8() {
+	CWaitCursor wc;
+	Strip.ResetTime();
+	Strip.AddTime(CHighTime::GetPresentTime());
+	if (Strip.GenHMapV5(Rcp) && hWndParent) {
+		::PostMessageW(hWndParent, UM_HEIGHT_CALCED, 0, 0);
+	}
+	Strip.AddTime(CHighTime::GetPresentTime());
+	cMsg2.SetWindowTextW(Strip.TimeSpanStr(1, 0));
+}
+
+void CStripDlg::OnBnClickedRadio2() {
+	Rcp.Mthd = RCP::VIS;
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedRadio3() {
+	Rcp.Mthd = RCP::PS0;
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedButton71() {
+	cPicWnd.bErase = false;
+	cPicWnd.SetImg2(Strip.ImBG); // Copy operation [10/25/2020 yuenl]
+	cPicWnd.Invalidate(FALSE);
+	cPlot.ShowWindow(SW_HIDE);
+	CString str;
+	str = Strip.GetReport();
+	WLI::SPSpar PsP;
+	PsP.SetConst(Strip.wlen_um[WLI::REDA], Strip.wlen_um[WLI::GRNA],
+		Strip.wlen_um[WLI::WHTA], Strip.UStep_um);
+	str += PsP.Report();
+	cReport.SetWindowTextW(str);
+	cReport.ShowWindow(SW_SHOW);
+}
+
+void CStripDlg::OnBnClickedCheck12() {
+	//if (Rcp.bPChg) Rcp.bPChg = false; else Rcp.bPChg = true;
+	Rcp.bPChg = ((CButton*)GetDlgItem(IDC_CHECK12))->GetCheck();
+	if (Rcp.bFindPChg) {
+		Rcp.bFindPChg = false;
+		((CButton*)GetDlgItem(IDC_CHECK14))->SetCheck(Rcp.bFindPChg);
+	}
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedRadio4() {
+	Rcp.Mthd = RCP::PSI;
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedRadio9() {
+	Rcp.Mthd = RCP::TW1;
+	ShowPlot(X, Y);
+}
+
+void CStripDlg::OnBnClickedButton78() {
+	IMGL::SBin Bin;
+	int idx = ICC.nIdx;
+	if (!Strip.Imgs[idx]->Im.Histo(Bin, IMGL::WHTC)) return;
+	IMGL::SPtS p;
+	IMGL::Slin ln1, ln2, ln3;
+	for (int i = 0; i < Bin.nBin; i++) {
+		p.x = float(i + 1);
+		if (ICC.bRed || ICC.bWht) p.y = float(Bin.psRed[i]); ln1.add(p);
+		if (ICC.bGrn || ICC.bWht) p.y = float(Bin.psGrn[i]); ln2.add(p);
+		if (ICC.bBlu || ICC.bWht) p.y = float(Bin.psBlu[i]); ln3.add(p);
+	}
+	ln1.maxmin(); ln2.maxmin(); ln3.maxmin();
+
+	cPlot.fmtX = "%.0f";
+	cPlot.Clear();
+	if (ICC.bRed || ICC.bWht) { ln1.setprop(RGB(255, 0, 0)); cPlot.Plot(ln1, 1); }
+	if (ICC.bGrn || ICC.bWht) { ln2.setprop(RGB(0, 255, 0)); cPlot.Plot(ln2, 1); }
+	if (ICC.bBlu || ICC.bWht) { ln3.setprop(RGB(0, 0, 255)); cPlot.Plot(ln3, 1); }
+	cPlot.Redraw(TRUE);
+}
+
+void CStripDlg::Refresh() {
+	int sz = Strip.size(); if (sz < 1) return;
+
+	ICC.nIdx = Strip.GetMaxPeakIdx(Strip.wd / 2, Strip.ht / 2, WLI::WHTA);
+	if ((ICC.nIdx < 1) || (ICC.nIdx >= sz)) return;
+
+	ShowPlot(X, Y);
+	UpdateImage(ICC.nIdx);
+
+	cPlot.ShowWindow(SW_HIDE);
+	cReport.SetWindowTextW(Strip.GetReport());
+	cReport.ShowWindow(SW_SHOW);
+}
+
+void CStripDlg::OnBnClickedButton11() {
+	CAcqDlg dlg; if (dlg.DoModal() == IDOK) Refresh();
+}
+
+void CStripDlg::OnBnClickedButton88() {
+	CFileDialog dlg(
+		FALSE, _T("CSV"), NULL,
+		OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NOCHANGEDIR,
+		_T("CSV|*.CSV|"));
+	std::wstring fname = DosUtil.GetProgramDir();
+	fname += _T("CSV"); int a = _wmkdir(fname.c_str());
+	dlg.m_ofn.lpstrInitialDir = fname.c_str();
+	dlg.m_ofn.lpstrTitle = _T("Save image strip");
+	if (dlg.DoModal() == IDOK) {
+		std::wstring wstr = dlg.GetPathName().GetBuffer();
+		if (Rcp.Mthd == RCP::TW1) Strip.ExpAnalysis(wstr.c_str(), X, Y);
+		else cPlot.Export(wstr.c_str());
+	}
+}
+
+void CStripDlg::OnBnClickedButton91() {
+	int sz = int(Strip.size()); if (sz < 1) return;
+	int wd, ht, bpp; Strip.GetDim(wd, ht, bpp);
+	SROI R1(sz), R2(sz - 1);
+	WLI::SFrng F;
+	Strip.CollectRGBW(F, wd / 2, ht / 2, R1);
+	float* pos = F.Z.Get(WLI::ZAXS, R1.i1, sz);
+	float* tmp = F.Z.Get(WLI::TMP1, R1.i1, sz - 1);
+	for (int i = 0; i < sz - 1; i++, pos++, tmp++) {
+		*tmp = *(pos + 1) - *pos;
+		*pos = float(i + 1);
+	}
+	cPlot.fmtX = "%.0f";
+	cPlot.fmtY = "%.4f";
+	cPlot.Clear();
+	IMGL::Slin lin;
+	if (Make(lin, F, WLI::TMP1, R2)) {
+		lin.setprop(RGB(64, 64, 64));
+		cPlot.Plot(lin, 1);
+	}
+	cPlot.AddHLine(SVHLine(lin.aver(), RGB(192, 192, 0)));
+	cPlot.Redraw(TRUE);
+	cPlot.ShowWindow(SW_SHOW);
+	cReport.ShowWindow(SW_HIDE);
+}
+
+void CStripDlg::OnBnClickedButton99() {
+	CFileDialog dlg(
+		FALSE, _T("CSV"), NULL,
+		OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NOCHANGEDIR,
+		_T("CSV|*.CSV|"));
+	std::wstring fname = DosUtil.GetProgramDir();
+	fname += _T("CSV"); int a = _wmkdir(fname.c_str());
+	dlg.m_ofn.lpstrInitialDir = fname.c_str();
+	dlg.m_ofn.lpstrTitle = _T("Save image strip");
+	if (dlg.DoModal() == IDOK) {
+		std::wstring wstr = dlg.GetPathName().GetBuffer();
+		if (Rcp.Mthd == RCP::TW1) Strip.ExpAnalysis(wstr.c_str(), X, Y);
+		else cPlot.dat.Export(wstr.c_str(), 1);
+	}
+}
+
+void CStripDlg::OnBnClickedButton100() {
+	CMoreSettingDlg dlg;
+	if (dlg.DoModal() == IDOK) {
+		Refresh();
+	}
+}
+
+void CStripDlg::OnBnClickedButton15() {
+	// TODO: Add your control notification handler code here
+
+	Pylon::PylonInitialize();
+
+	try {
+		// Refresh the list of all attached cameras.
+		EnumerateDevices();
+
+		// Update the GUI.
+
+		// Always update the device list and the image
+		EUpdateHint hint = EUpdateHint(UpdateHint_DeviceList | UpdateHint_Image);
+
+		if (m_camera.IsPylonDeviceAttached()) {
+			// in this SDI application the document will be reused.
+			// We need to update the window title, in case the camera has been removed.
+			hint = EUpdateHint(hint | UpdateHint_Feature);
+		}
+		else {
+			// in this SDI application the document will be reused.
+			// We need to update the window title, in case the camera has been removed.
+			CString s;
+			s.LoadString(AFX_IDS_UNTITLED);
+			//SetTitle(s);
+		}
+
+		//FillDeviceListCtrl(m_devices);
+	}
+	catch (const Pylon::GenericException& e) {
+		TRACE(_T("Error during Refresh: %s"), (LPCWSTR)CUtf82W(e.what()));
+		UNUSED(e);
+	}
+	Pylon::PylonTerminate();
+}
+
+int CStripDlg::EnumerateDevices() {
+	Pylon::DeviceInfoList_t devices;
+	try {
+		// Get the transport layer factory.
+		Pylon::CTlFactory& TlFactory = Pylon::CTlFactory::GetInstance();
+
+		// Get all attached cameras.
+		TlFactory.EnumerateDevices(devices);
+	}
+	catch (const Pylon::GenericException& e) {
+		UNUSED(e);
+		devices.clear();
+
+		TRACE(CUtf82W(e.what()));
+	}
+	int size = (int)devices.size();
+	m_devices = devices;
+	//FillDeviceListCtrl(devices);
+	// When calling this function, make sure to update the device list control,
+	// because its items store pointers to elements in the m_devices list.
+	return (int)m_devices.size();
+}

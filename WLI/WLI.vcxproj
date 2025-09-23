@@ -1,0 +1,605 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Simul|Win32">
+      <Configuration>Simul</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Simul|x64">
+      <Configuration>Simul</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{B4174674-2A8E-412F-BE24-655D9CCA405A}</ProjectGuid>
+    <Keyword>MFCProj</Keyword>
+    <RootNamespace>WLI</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simul|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simul|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Simul|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Simul|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)_LT</TargetName>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simul|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)_LT</TargetName>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+    <TargetName>$(ProjectName)_LT</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simul|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+    <TargetName>$(ProjectName)_LT</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+    <TargetName>$(ProjectName)_LT</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>C:\WLIN\</OutDir>
+    <IntDir>$(OutDir)Debug\</IntDir>
+    <TargetName>$(ProjectName)_LT</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;C:\Program Files\Basler\pylon 7\Development\include;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <OpenMPSupport>false</OpenMPSupport>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;C:\Program Files\Basler\pylon 7\Development\lib\x64;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simul|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <OpenMPSupport>true</OpenMPSupport>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;C:\Program Files\Basler\pylon 7\Development\include;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;C:\Program Files\Basler\pylon 7\Development\lib\x64;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simul|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>.\;..\;$(PYLON_DEV_DIR)include;;C:\opencv\build\include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <PreprocessorDefinitions>_AFXDLL;_UNICODE;UNICODE;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\CAM\CamDev.h" />
+    <ClInclude Include="..\CAM\Camera.h" />
+    <ClInclude Include="..\CAM\CamPar.h" />
+    <ClInclude Include="..\CAM\LucamDev.h" />
+    <ClInclude Include="..\IM\ColorMapGenerator.h" />
+    <ClInclude Include="..\IM\fArchive.h" />
+    <ClInclude Include="..\IM\IM.h" />
+    <ClInclude Include="..\IM\IMS.h" />
+    <ClInclude Include="..\LOG\LogSys.h" />
+    <ClInclude Include="..\MOTOR\COM.h" />
+    <ClInclude Include="..\MOTOR\COM_D.h" />
+    <ClInclude Include="..\MOTOR\Motor.h" />
+    <ClInclude Include="..\MOTOR\MotorCtrl.h" />
+    <ClInclude Include="..\MOTOR\Piezo.h" />
+    <ClInclude Include="..\MOTOR\PriorConfig\controller_interface.h" />
+    <ClInclude Include="..\MOTOR\PriorConfig\controller_interface.hpp" />
+    <ClInclude Include="..\MOTOR\PriorConfig\datalink_serial.hpp" />
+    <ClInclude Include="..\MOTOR\PriorConfig\dll_adapter.hpp" />
+    <ClInclude Include="..\MOTOR\PriorConfig\et_common_api.h" />
+    <ClInclude Include="..\MOTOR\PriorConfig\find_dll.hpp" />
+    <ClInclude Include="..\MOTOR\PriorPiezo.h" />
+    <ClInclude Include="..\MOTOR\Stage.h" />
+    <ClInclude Include="..\MOTOR\Tilt.h" />
+    <ClInclude Include="..\MTH\Ang.h" />
+    <ClInclude Include="..\MTH\Define.h" />
+    <ClInclude Include="..\MTH\LSF3D.h" />
+    <ClInclude Include="..\MTH\LSFit.h" />
+    <ClInclude Include="..\MTH\Point3.h" />
+    <ClInclude Include="..\MTH\Pxy.h" />
+    <ClInclude Include="..\MTH\Stat.h" />
+    <ClInclude Include="..\PLT\HSL2RGB.h" />
+    <ClInclude Include="..\PSI\Frng.h" />
+    <ClInclude Include="..\PSI\ICC.h" />
+    <ClInclude Include="..\PSI\In.h" />
+    <ClInclude Include="..\PSI\PSpar.h" />
+    <ClInclude Include="..\PSI\Roi.h" />
+    <ClInclude Include="..\PSI\sdef.h" />
+    <ClInclude Include="..\PSI\Strip.h" />
+    <ClInclude Include="..\SRC\DOSUtil.h" />
+    <ClInclude Include="..\SRC\EdListCtrl.h" />
+    <ClInclude Include="..\SRC\hightime.h" />
+    <ClInclude Include="..\SRC\InPEdit.h" />
+    <ClInclude Include="..\SRC\ResizableDialog.h" />
+    <ClInclude Include="..\SRC\ResizableFormView.h" />
+    <ClInclude Include="..\SRC\ResizableGrip.h" />
+    <ClInclude Include="..\SRC\ResizableLayout.h" />
+    <ClInclude Include="..\SRC\ResizableMinMax.h" />
+    <ClInclude Include="..\SRC\ResizableState.h" />
+    <ClInclude Include="..\SRC\sinstance.h" />
+    <ClInclude Include="..\SRC\XTabCtrl.h" />
+    <ClInclude Include="..\SRC\XTabDefine.h" />
+    <ClInclude Include="000_rev.h" />
+    <ClInclude Include="AcqDlg.h" />
+    <ClInclude Include="AnalysisDlg.h" />
+    <ClInclude Include="AutoFocus.h" />
+    <ClInclude Include="AutoPacketSizeConfiguration.h" />
+    <ClInclude Include="AutoTilt.h" />
+    <ClInclude Include="BaslerCamDev.h" />
+    <ClInclude Include="BaslerCameraDlg.h" />
+    <ClInclude Include="BaslerColourCam.h" />
+    <ClInclude Include="BaslerMonoCam.h" />
+    <ClInclude Include="C2DPlotDlg.h" />
+    <ClInclude Include="C3DPlotDlg.h" />
+    <ClInclude Include="CameraDlg.h" />
+    <ClInclude Include="CameraProp.h" />
+    <ClInclude Include="CamSetDlg.h" />
+    <ClInclude Include="CEOPiezo.h" />
+    <ClInclude Include="Cfilters.h" />
+    <ClInclude Include="ChuckMask.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="ColorDefine.h" />
+    <ClInclude Include="Coor.h" />
+    <ClInclude Include="Data.h" />
+    <ClInclude Include="DataList.h" />
+    <ClInclude Include="Dev.h" />
+    <ClInclude Include="eo-drive.h" />
+    <ClInclude Include="fft_lib.h" />
+    <ClInclude Include="FocusLevelDlg.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="FringeWnd.h" />
+    <ClInclude Include="Glbs.h" />
+    <ClInclude Include="HeightDlg.h" />
+    <ClInclude Include="HeightPlot.h" />
+    <ClInclude Include="LevelSetupDlg.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MeasProgressDlg.h" />
+    <ClInclude Include="MeasurementDlg.h" />
+    <ClInclude Include="MeasurementProperties.h" />
+    <ClInclude Include="MeParam.h" />
+    <ClInclude Include="MoCtrl.h" />
+    <ClInclude Include="MoreSettingDlg.h" />
+    <ClInclude Include="MotionControlDlg.h" />
+    <ClInclude Include="MotPropDlg.h" />
+    <ClInclude Include="MParam.h" />
+    <ClInclude Include="MPList.h" />
+    <ClInclude Include="MPoint.h" />
+    <ClInclude Include="Pattern.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Pegrpapi.h" />
+    <ClInclude Include="PicWnd.h" />
+    <ClInclude Include="PylonStringHelpers.h" />
+    <ClInclude Include="RAFTApp.h" />
+    <ClInclude Include="Recipe.h" />
+    <ClInclude Include="RecipeDlg.h" />
+    <ClInclude Include="RecipeRAFT.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="MoSetup.h" />
+    <ClInclude Include="ResultRAFT.h" />
+    <ClInclude Include="ResultDlg.h" />
+    <ClInclude Include="RoughnessDlg.h" />
+    <ClInclude Include="ScanPar.h" />
+    <ClInclude Include="Spot.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StripDlg.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TiltControlDlg.h" />
+    <ClInclude Include="WaferMap.h" />
+    <ClInclude Include="WaferParam.h" />
+    <ClInclude Include="wdefine.h" />
+    <ClInclude Include="WLI.h" />
+    <ClInclude Include="WLIDoc.h" />
+    <ClInclude Include="WLIView.h" />
+    <ClInclude Include="XYStageDlg.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\CAM\CamDev.cpp" />
+    <ClCompile Include="..\CAM\Camera.cpp" />
+    <ClCompile Include="..\CAM\CamPar.cpp" />
+    <ClCompile Include="..\CAM\LucamDev.cpp" />
+    <ClCompile Include="..\IM\ColorMapGenerator.cpp" />
+    <ClCompile Include="..\IM\IM.cpp" />
+    <ClCompile Include="..\IM\IMS.cpp" />
+    <ClCompile Include="..\LOG\LogSys.cpp" />
+    <ClCompile Include="..\MOTOR\COM.cpp" />
+    <ClCompile Include="..\MOTOR\COM_D.cpp" />
+    <ClCompile Include="..\MOTOR\Motor.cpp" />
+    <ClCompile Include="..\MOTOR\MotorCtrl.cpp" />
+    <ClCompile Include="..\MOTOR\Piezo.cpp" />
+    <ClCompile Include="..\MOTOR\PriorConfig\datalink_serial.cpp" />
+    <ClCompile Include="..\MOTOR\PriorConfig\dll_adapter.cpp" />
+    <ClCompile Include="..\MOTOR\PriorConfig\find_dll.cpp" />
+    <ClCompile Include="..\MOTOR\PriorPiezo.cpp" />
+    <ClCompile Include="..\MOTOR\Stage.cpp" />
+    <ClCompile Include="..\MOTOR\Tilt.cpp" />
+    <ClCompile Include="..\MTH\Ang.cpp" />
+    <ClCompile Include="..\MTH\LSF3D.cpp" />
+    <ClCompile Include="..\MTH\LSFit.cpp" />
+    <ClCompile Include="..\MTH\Point3.cpp" />
+    <ClCompile Include="..\MTH\Stat.cpp" />
+    <ClCompile Include="..\PLT\HSL2RGB.cpp" />
+    <ClCompile Include="..\PSI\Frng.cpp" />
+    <ClCompile Include="..\PSI\ICC.cpp" />
+    <ClCompile Include="..\PSI\In.cpp" />
+    <ClCompile Include="..\PSI\PSpar.cpp" />
+    <ClCompile Include="..\PSI\Roi.cpp" />
+    <ClCompile Include="..\PSI\sdef.cpp" />
+    <ClCompile Include="..\PSI\Strip.cpp" />
+    <ClCompile Include="..\SRC\DosUtil.cpp" />
+    <ClCompile Include="..\SRC\EdListCtrl.cpp" />
+    <ClCompile Include="..\SRC\hightime.cpp" />
+    <ClCompile Include="..\SRC\InPEdit.cpp" />
+    <ClCompile Include="..\SRC\ResizableDialog.cpp" />
+    <ClCompile Include="..\SRC\ResizableFormView.cpp" />
+    <ClCompile Include="..\SRC\ResizableGrip.cpp" />
+    <ClCompile Include="..\SRC\ResizableLayout.cpp" />
+    <ClCompile Include="..\SRC\ResizableMinMax.cpp" />
+    <ClCompile Include="..\SRC\ResizableState.cpp" />
+    <ClCompile Include="..\SRC\sinstance.cpp" />
+    <ClCompile Include="..\SRC\XTabCtrl.cpp" />
+    <ClCompile Include="AcqDlg.cpp" />
+    <ClCompile Include="AnalysisDlg.cpp" />
+    <ClCompile Include="AutoFocus.cpp" />
+    <ClCompile Include="AutoTilt.cpp" />
+    <ClCompile Include="BaslerCamDev.cpp" />
+    <ClCompile Include="BaslerCameraDlg.cpp" />
+    <ClCompile Include="BaslerColourCam.cpp" />
+    <ClCompile Include="BaslerMonoCam.cpp" />
+    <ClCompile Include="C2DPlotDlg.cpp" />
+    <ClCompile Include="C3DPlotDlg.cpp" />
+    <ClCompile Include="CameraDlg.cpp" />
+    <ClCompile Include="CameraProp.cpp" />
+    <ClCompile Include="CamSetDlg.cpp" />
+    <ClCompile Include="CEOPiezo.cpp" />
+    <ClCompile Include="Cfilters.cpp" />
+    <ClCompile Include="ChuckMask.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Coor.cpp" />
+    <ClCompile Include="Data.cpp" />
+    <ClCompile Include="DataList.cpp" />
+    <ClCompile Include="Dev.cpp" />
+    <ClCompile Include="fft_lib.cpp" />
+    <ClCompile Include="FocusLevelDlg.cpp" />
+    <ClCompile Include="FringeWnd.cpp" />
+    <ClCompile Include="Glbs.cpp" />
+    <ClCompile Include="HeightDlg.cpp" />
+    <ClCompile Include="HeightPlot.cpp" />
+    <ClCompile Include="LevelSetupDlg.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MeasProgressDlg.cpp" />
+    <ClCompile Include="MeasurementDlg.cpp" />
+    <ClCompile Include="MeasurementProperties.cpp" />
+    <ClCompile Include="MeParam.cpp" />
+    <ClCompile Include="MoCtrl.cpp" />
+    <ClCompile Include="MoreSettingDlg.cpp" />
+    <ClCompile Include="MotionControlDlg.cpp" />
+    <ClCompile Include="MotPropDlg.cpp" />
+    <ClCompile Include="MPList.cpp" />
+    <ClCompile Include="MPoint.cpp" />
+    <ClCompile Include="Pattern.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simul|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simul|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="MoSetup.cpp" />
+    <ClCompile Include="PicWnd.cpp" />
+    <ClCompile Include="PylonStringHelpers.cpp" />
+    <ClCompile Include="RAFTApp.cpp" />
+    <ClCompile Include="Recipe.cpp" />
+    <ClCompile Include="RecipeDlg.cpp" />
+    <ClCompile Include="RecipeRAFT.cpp" />
+    <ClCompile Include="ResultRAFT.cpp" />
+    <ClCompile Include="ResultDlg.cpp" />
+    <ClCompile Include="RoughnessDlg.cpp" />
+    <ClCompile Include="Spot.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="StripDlg.cpp" />
+    <ClCompile Include="TiltControlDlg.cpp" />
+    <ClCompile Include="WaferMap.cpp" />
+    <ClCompile Include="WaferParam.cpp" />
+    <ClCompile Include="WLI.cpp" />
+    <ClCompile Include="WLIDoc.cpp" />
+    <ClCompile Include="WLIView.cpp" />
+    <ClCompile Include="XYStageDlg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\SRC\hightime.inl" />
+    <None Include="ClassDiagram.cd" />
+    <None Include="PEGRP32G.DLL" />
+    <None Include="PEGRP64G.DLL" />
+    <None Include="res\WLI.rc2" />
+    <None Include="WLI.reg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WLI.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\test.jpg" />
+    <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bmp00001.bmp" />
+    <Image Include="res\RAFT.ico" />
+    <Image Include="res\test.bmp" />
+    <Image Include="res\test.jpg" />
+    <Image Include="res\WLI.ico" />
+    <Image Include="res\WLIDoc.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\MOTOR\PI_GCS2_DLL_x64.lib" />
+    <Library Include="PEGRP64G.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
