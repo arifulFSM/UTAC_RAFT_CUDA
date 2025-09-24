@@ -78,6 +78,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -105,6 +106,8 @@
     <TargetName>$(ProjectName)_LT</TargetName>
     <OutDir>C:\WLIN\</OutDir>
     <IntDir>$(OutDir)Debug\</IntDir>
+    <IncludePath>$(CUDA_PATH)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(CUDA_PATH)\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simul|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -157,8 +160,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)CAM\;$(SolutionDir)MOTOR\;$(PYLON_DEV_DIR)lib\x64;C:\Program Files\Basler\pylon 7\Development\lib\x64;C:\opencv\build\x64\vc16\lib</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(ProjectName)_LT.exe</OutputFile>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalDependencies>cuda.lib;cudart.lib;opencv_world490d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -419,6 +421,7 @@
     <ClInclude Include="Glbs.h" />
     <ClInclude Include="HeightDlg.h" />
     <ClInclude Include="HeightPlot.h" />
+    <ClInclude Include="kernel.h" />
     <ClInclude Include="LevelSetupDlg.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MeasProgressDlg.h" />
@@ -599,7 +602,11 @@
     <Library Include="..\MOTOR\PI_GCS2_DLL_x64.lib" />
     <Library Include="PEGRP64G.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="kernel.cu" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.targets" />
   </ImportGroup>
 </Project>

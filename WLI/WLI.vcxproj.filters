@@ -229,6 +229,7 @@
     <ClInclude Include="WLIDoc.h" />
     <ClInclude Include="WLIView.h" />
     <ClInclude Include="XYStageDlg.h" />
+    <ClInclude Include="kernel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WLI.cpp">
@@ -551,7 +552,6 @@
     <ClInclude Include="..\MOTOR\Motor.h" />
     <ClInclude Include="..\MOTOR\MotorCtrl.h" />
     <ClInclude Include="..\MOTOR\Piezo.h" />
-    <ClInclude Include="..\MOTOR\PI_GCS2_DLL.h" />
     <ClInclude Include="..\MOTOR\PriorConfig\controller_interface.h" />
     <ClInclude Include="..\MOTOR\PriorConfig\controller_interface.hpp" />
     <ClInclude Include="..\MOTOR\PriorConfig\datalink_serial.hpp" />
@@ -685,5 +685,8 @@
     <None Include="PEGRP64G.DLL" />
     <None Include="res\WLI.rc2" />
     <None Include="WLI.reg" />
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="kernel.cu" />
   </ItemGroup>
 </Project>

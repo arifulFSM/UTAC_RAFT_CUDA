@@ -27,10 +27,11 @@ namespace WLI {
 		//////////////////////////////////////////////////////////////////////////
 		IMGL::CIM ImBG; // background image at the start of capture
 		IMGL::CIM16 Im16um;
+		cv::Mat CVIm16um;//20250916
 		//////////////////////////////////////////////////////////////////////////
 		// everything related to entire image group
 		std::vector<SIms*> Imgs;  // image database
-		std::vector<std::pair<cv::Mat, float>>CVImgs;	// image database
+		std::vector<std::pair<cv::Mat, float>>CVImgs; //20250916	// image database
 		float xPos = 0, yPos = 0, zPos;
 		int wd = 0, ht = 0, bpp = 0;
 		int nSteps = 0; // total number of steps moved
@@ -57,12 +58,13 @@ namespace WLI {
 
 	public:
 		bool GenHMapV5(RCP::SRecipe& Rcp);
+		bool GenHMapV5CV(RCP::SRecipe& Rcp);//20250916
 		bool GenHMapFom(int Idx, std::wstring& log);
 		bool GenHMapEnv(std::wstring& log);
 
 	public:
 		bool InitCalc();
-		bool CVInitCalc();
+		bool InitCalcCV();
 		void DeallocAll();
 		CString GetReport();
 		bool GetDim(int& x, int& y, int& b);
@@ -78,6 +80,7 @@ namespace WLI {
 		IMGL::CIM* GetImg(int idx);
 		WLI::SIms* GetIms(int idx);
 		int size();
+		int sizeCV();//20250916
 		int GetMaxPeakIdx(int x, int y, WLI::FRP nChan, bool bPChg = false);
 		float GetZPos(int idx);
 

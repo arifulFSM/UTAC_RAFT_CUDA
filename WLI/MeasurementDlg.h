@@ -10,8 +10,11 @@
 #include "WaferMap.h"
 #include "wdefine.h"
 #include "Cfilters.h"
+#include <opencv2/core.hpp>
+//#include <opencv2/imgproc.hpp>
 
 // MeasurementDlg dialog
+using namespace cv;
 
 typedef struct _RStats {
 	double fAver;
@@ -47,6 +50,7 @@ public:
 	CListCtrl m_cResults;
 	afx_msg void OnBnClickedMeLoadrcp();
 	afx_msg void OnBnClickedMeasure();
+	void Make24HStretchCV(cv::Mat& ImCV);//20250916
 	void DataAcquisitionSimu();
 	void DataAcquisition();
 	std::vector<float>HeightData;

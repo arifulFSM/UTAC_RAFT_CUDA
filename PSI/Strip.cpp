@@ -71,6 +71,7 @@ WLI::SIms* WLI::CStrip::GetIms(int idx) {
 }
 
 int WLI::CStrip::size() { return int(Imgs.size()); }
+int WLI::CStrip::sizeCV() { return int(CVImgs.size()); } //20250916
 
 int WLI::CStrip::GetMaxPeakIdx(int x, int y, WLI::FRP nChan, bool bPChg /*= false*/) {
 	float v, max = -1, min = 999;
@@ -149,7 +150,7 @@ CString WLI::CStrip::GetReport() {
 	return str;
 }
 
-bool WLI::CStrip::CVInitCalc()
+bool WLI::CStrip::InitCalcCV()
 {
 	WLI::SFrng F;
 
@@ -308,7 +309,8 @@ bool WLI::CStrip::VProfile(SFrng& F, WLI::FRP Ch, int x, SROI& R) {
 
 bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	// no sanity check from this point on
-	int sz = Strip.size();
+	//int sz = Strip.size(); //ARIF COMMENTED 20250916
+	int sz = Strip.sizeCV(); //20250916
 	int st = R.i1, ed = R.i2;
 	if (st < 0) { st = 0; ASSERT(0); }
 	if (ed > nSteps) { ed = nSteps; ASSERT(0); }
@@ -318,9 +320,11 @@ bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	// Initialization
 	double avew = 0, aver = 0, aveg = 0, aveb = 0;
 	SStat* pSt;
-	SIms** pI = &Imgs[st];
+	//SIms** pI = &Imgs[st]; //ARIF COMMENTED 20250916
+	std::pair<cv::Mat,float>* pICV =& CVImgs[st]; //.first; //20250916
 	float* pX, * pZ1, * pZ2, * pZ3, * pZ4;
 
+	// background Image need to modify this also ARIF
 	bool bBg = false;
 	if (!ImBG.IsNull()) {
 		bBg = true;
@@ -337,12 +341,24 @@ bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 		pZ2 = F.Z.Get(WLI::GRNA, st, nSteps);
 		pZ3 = F.Z.Get(WLI::BLUA, st, nSteps);
 		pZ4 = F.Z.Get(WLI::WHTA, st, nSteps);
-		for (int i = st; i < ed; i++, pI++, pX++, pZ1++, pZ2++, pZ3++, pZ4++) {
-			*pX = (*pI)->PzPos_um;
-			COLORREF cr = (*pI)->GetPixRGB(x, y);
+		for (int i = st; i < ed; i++, /*pI++,*/pICV++, pX++, pZ1++, pZ2++, pZ3++, pZ4++) {  //ARIF COMMENTED 20250916
+			//ARIF COMMENTED 20250916
+			//*pX = (*pI)->PzPos_um; 
+			//COLORREF cr = (*pI)->GetPixRGB(x, y);
+			//v1 = *pZ1 = GetRValue(cr);
+			//v2 = *pZ2 = GetGValue(cr);
+			//v3 = *pZ3 = GetBValue(cr);
+	
+			//20250916
+			*pX = (*pICV).second;
+			cv::Vec3b bgrPixel = CVImgs[i].first.at<cv::Vec3b>(y, x);
+			COLORREF cr = RGB(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
+			// collect rgb data in a points
 			v1 = *pZ1 = GetRValue(cr);
 			v2 = *pZ2 = GetGValue(cr);
 			v3 = *pZ3 = GetBValue(cr);
+			//
+			
 			switch (WhtCalc) {
 			case WLI::PCPTN:
 				v4 = *pZ4 = (sfR * v1 + sfG * v2 + sfB * v3);
@@ -379,9 +395,15 @@ bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	case WLI::REDA:
 		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
 		pZ1 = F.Z.Get(WLI::REDA, st, nSteps);
-		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) {
-			*pX = (*pI)->PzPos_um;
-			float v = GetRValue((*pI)->GetPixRGB(x, y));
+		for (int i = st; i < ed; i++, /*pI++,*/ pICV++, pX++, pZ1++) { //ARIF COMMENTED 20250916
+			//ARIF COMMENTED 20250916
+			//*pX = (*pI)->PzPos_um;
+			//float v = GetRValue((*pI)->GetPixRGB(x, y));
+			
+			//20250916
+			*pX = (*pICV).second;
+			float v = CVImgs[i].first.at<cv::Vec3b>(y, x)[2]; //get red value 
+			//
 			*pZ1 = v; //if (!bBg) aver += v;
 		}
 		F.MaxMin(WLI::REDA, R, sz, true);
@@ -391,9 +413,15 @@ bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	case WLI::GRNA:
 		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
 		pZ1 = F.Z.Get(WLI::GRNA, st, nSteps);
-		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) {
-			*pX = (*pI)->PzPos_um;
-			float v = GetGValue((*pI)->GetPixRGB(x, y));
+		for (int i = st; i < ed; i++, /*pI++,*/ pICV++, pX++, pZ1++) { //ARIF COMMENTED 20250916
+			//ARIF COMMENTED 20250916
+			//*pX = (*pI)->PzPos_um;
+			//float v = GetGValue((*pI)->GetPixRGB(x, y));
+
+			//20250916
+			*pX = (*pICV).second;
+			float v = CVImgs[i].first.at<cv::Vec3b>(y, x)[1]; //get green value
+			//
 			*pZ1 = v; //if (!bBg) aveg += v;
 		}
 		F.MaxMin(WLI::GRNA, R, sz, true);
@@ -403,9 +431,15 @@ bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	case WLI::BLUA:
 		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
 		pZ1 = F.Z.Get(WLI::BLUA, st, nSteps);
-		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) {
-			*pX = (*pI)->PzPos_um;
-			float v = GetBValue((*pI)->GetPixRGB(x, y));
+		for (int i = st; i < ed; i++, /*pI++,*/pICV++, pX++, pZ1++) { //ARIF COMMENTED 20250916
+			//ARIF COMMENTED 20250916
+			//*pX = (*pI)->PzPos_um;
+			//float v = GetBValue((*pI)->GetPixRGB(x, y));
+
+			//20250916
+			*pX = (*pICV).second;
+			float v = CVImgs[i].first.at<cv::Vec3b>(y, x)[0];
+			//
 			*pZ1 = v; //if (!bBg) aveb += v;
 		}
 		F.MaxMin(WLI::BLUA, R, sz, true);
@@ -722,6 +756,160 @@ bool WLI::CStrip::GenHMapV5(RCP::SRecipe& Rcp) {
 				CollectZCH(F, x, y, R, Ch);
 				if (nSmo) { F.Smooth(Ch, nSmo, 3, R); }
 				Im16um.SetPixel(x, y, F.PeakPSI5(Ch, idx, inc, PS1sin, sz));
+			}
+		}
+		/*if (Rcp.bUnwrap)*/ Im16um.Unwrap(IMGL::LR);
+		Im16um.Mult(wlf);
+		break;
+	case RCP::TW1:
+		PsP.SetConst(Strip.wlen_um[REDA], Strip.wlen_um[GRNA], Strip.wlen_um[WHTA], Strip.UStep_um);
+		inc = PsP.Inc[int(WLI::GRNA)]; if (inc < 1) ASSERT(0);
+		inc2 = 2 * inc;
+		idx = ICC.nIdx;
+		if ((idx < inc2) || (idx >= sz - inc2)) idx = sz / 2;
+		PS1sin = PsP.PSsin[FRP::REDA]; PS2sin = PsP.PSsin[FRP::GRNA];
+		R1.SetA(idx - sz10, idx + sz10, inc, sz);
+#pragma omp parallel for
+		//for (int y = 0; y < ht; y++) {
+		for (int y = ICC.y1; y <= ICC.y2; y++) { // Height // 05302023 - Mortuja
+			WLI::SFrng F; SROI R1; float phG = 0;
+			//for (int x = 0; x < wd; x++) {
+			for (int x = ICC.x1; x <= ICC.x2; x++) { // Width // 05302023 - Mortuja
+				CollectZCH(F, x, y, R, Ch);
+				if (nSmo) {
+					F.Smooth(WLI::REDA, nSmo, 3, R);
+					F.Smooth(WLI::GRNA, nSmo, 3, R);
+				}
+				Im16um.SetPixel(x, y, F.TW1Z(F.PhaseI5(PsP, idx, phG), phG, PsP));
+			}
+		}
+		break;
+	case RCP::VIS:
+	default:
+		PsP.Set(Ch, Strip.wlen_um[Ch], Strip.UStep_um);
+		inc = PsP.Inc[int(Ch)]; if (inc < 1) ASSERT(0);
+		inc2 = 2 * inc; inc4 = int(2.5 * inc);
+		//xmn = Strip.Imgs[0]->PzPos_um;
+		//xmx = Strip.Imgs[sz - 1]->PzPos_um;
+#pragma omp parallel for
+		//for (int y = 0; y < ht; y++) {
+		for (int y = ICC.y1; y <= ICC.y2; y++) { // Height // 05302023 - Mortuja
+			WLI::SFrng F; SROI Rt, R1;
+			SStat* pSt1 = &F.Z.St[Ch];
+			SStat* pSt2 = &F.Z.St[WLI::VIS1];
+			//for (int x = 0; x < wd; x++) {
+			for (int x = ICC.x1; x <= ICC.x2; x++) { // Width // 05302023 - Mortuja
+				CollectZCH(F, x, y, R, Ch);
+				if (bPChg) R1.SetI(F.Z.St[Ch].imn, inc4, sz);
+				else R1.SetI(F.Z.St[Ch].imx, inc4, sz);
+				F.PhasePV5(Ch, WLI::PHS1, PsP, R1);
+				//F.VisiV5(Ch, PsP, R1);
+				F.Smooth(WLI::VIS1, 1, 7, R1);
+				Rt.SetI(F.Z.St[WLI::VIS1].imx, inc2, sz);
+				float v = F.PeakGrad(WLI::VIS1, Rt.i1, Rt.i2, sz);
+				Im16um.SetPixel(x, y, v);
+			}
+		}
+		break;
+	}
+	return true;
+}
+
+
+//20250916
+bool WLI::CStrip::GenHMapV5CV(RCP::SRecipe& Rcp) {
+	//int sz = size();
+	int sz = sizeCV();
+	if (!Im16um.Create(wd, ht)) return false;
+	CVIm16um = cv::Mat::zeros(ht, wd, CV_32F);
+
+	WLI::SPSpar PsP;
+	const WLI::FRP Ch = WHTA;
+
+	PsP.SetConst(wlen_um[WLI::REDA], wlen_um[WLI::GRNA], wlen_um[WLI::WHTA], UStep_um);
+	int inc = PsP.Inc[int(Ch)], inc2 = 2 * inc, inc3 = 3 * inc, inc4 = 4 * inc;
+	int wdw = 2 * (inc - 1) + 1; if (wdw < 3) wdw = 3;
+	bool bPChg = Rcp.bPChg;
+
+	short nSmo = 0;
+	if (Rcp.bSmo) nSmo = Rcp.nSmo;
+	if (Rcp.bSmoHvy) nSmo = 3 * Rcp.nSmo;
+
+	int idx = 0;
+	int sz10 = sz / 8; if (sz10 < inc2) sz10 = inc2;
+	//float xmx, xmn;
+	float PS1sin, PS2sin, wlen = Strip.wlen_um[Ch], wlf;
+	SROI R(sz), R1;
+	R.EnsureValid(inc, sz);
+
+	//if (ICC.isRegionType == ICC.LINE) { // 07122023
+	//	if (ICC.isOriental == ICC.HORIZONTAL) ICC.y2 = ICC.y1;
+	//	else ICC.x2 = ICC.x1;
+	//}
+
+
+
+	switch (Rcp.Mthd) {
+	case RCP::PS0:
+		PsP.SetConst(Strip.wlen_um[WLI::REDA], Strip.wlen_um[WLI::GRNA], Strip.wlen_um[WLI::WHTA], Strip.UStep_um);
+		inc = PsP.Inc[int(Ch)]; if (inc < 1) { ASSERT(0); return false; }
+		inc2 = 2 * inc; inc3 = 3 * inc; inc4 = 4 * inc;
+#pragma omp parallel for
+		for (int y = 0; y < ht; y++) { // 05302023 - Mortuja
+			//for (int y = ICC.y1; y <= ICC.y2; y++) { // Height // 05302023 - Mortuja
+			int idx;
+			WLI::SFrng F; SROI R1, R2;
+			SStat* pSt = &F.Z.St[Ch];
+			for (int x = 0; x < wd; x++) { // 05302023 - Mortuja
+				//for (int x = ICC.x1; x <= ICC.x2; x++) { // Width // 05302023 - Mortuja
+				CollectZCH(F, x, y, R, Ch);
+				if (!Rcp.bFindPChg) {
+					if (bPChg) idx = pSt->imn; else idx = pSt->imx;
+				}
+				else {
+					if ((pSt->fmax - pSt->fave) >= (pSt->fave - pSt->fmin)) {
+						idx = pSt->imx; bPChg = false;
+					}
+					else { idx = pSt->imn; bPChg = true; }
+				}
+				//if (!R.InRange(idx)) { Im16um.SetPixel(x, y, BADDATA); continue; }
+				if (!R.InRange(idx)) { CVIm16um.at<float>(y, x) = BADDATA; continue; }//20250916
+				if (nSmo) {
+					if (R1.SetA(idx - sz10, idx + sz10, inc, sz)) {
+						F.Smooth(Ch, nSmo, 3, R1);
+					}
+				}
+				R2.SetI(idx, inc3, sz);
+				//if (!R2.EnsureValid(inc, sz)) { Im16um.SetPixel(x, y, BADDATA); continue; }
+				float Rsl;
+				if (F.PhasePV5(Ch, WLI::PHS1, PsP, R2)) {
+					Rsl = F.PeakPhas(WLI::PHS1, idx - 2, idx + 2, bPChg, sz);
+				}
+				else Rsl = BADDATA;
+				//Im16um.SetPixel(x, y, Rsl);
+				CVIm16um.at<float>(y, x) = Rsl;//20250916
+			}
+		}
+		break;
+	case RCP::PSI:
+		PsP.Set(Ch, Strip.wlen_um[Ch], Strip.UStep_um);
+		wlf = Strip.wlen_um[Ch] / 2.f * PIE;
+		inc = PsP.Inc[int(Ch)]; if (inc < 1) ASSERT(0);
+		inc2 = 2 * inc; inc3 = 3 * inc; inc4 = 4 * inc;
+		PS1sin = PsP.PSsin[Ch];
+		idx = GetMaxPeakIdx(wd / 2, ht / 2, Ch);
+		if (idx < (inc2) || idx >(sz - inc2)) idx = sz / 2;
+		R.Set(idx - inc3, idx + inc3);
+#pragma omp parallel for
+		//for (int y = 0; y < ht; y++) {
+		for (int y = ICC.y1; y <= ICC.y2; y++) { // Height // 05302023 - Mortuja
+			WLI::SFrng F;
+			//for (int x = 0; x < wd; x++) {
+			for (int x = ICC.x1; x <= ICC.x2; x++) { // Width // 05302023 - Mortuja
+				CollectZCH(F, x, y, R, Ch);
+				if (nSmo) { F.Smooth(Ch, nSmo, 3, R); }
+				//Im16um.SetPixel(x, y, F.PeakPSI5(Ch, idx, inc, PS1sin, sz));
+				CVIm16um.at<float>(y, x) = F.PeakPSI5(Ch, idx, inc, PS1sin, sz); //20250916
 			}
 		}
 		/*if (Rcp.bUnwrap)*/ Im16um.Unwrap(IMGL::LR);

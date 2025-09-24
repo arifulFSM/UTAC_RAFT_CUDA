@@ -531,7 +531,7 @@ void MeasurementDlg::getHeightData(int idx) {
 	Strip.InitCalcCV();
 	Strip.GenHMapV5CV(Rcp);
 	cv::Mat& ImCV = Strip.CVIm16um;
-	//Make24HStretchCV(ImCV); // Need to modify this to convert height map into 8-bit/3 channel image
+	//Make24HStretchCV(ImCV);
 	wd = ImCV.cols;
 	ht = ImCV.rows;
 	
