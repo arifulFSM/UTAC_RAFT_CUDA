@@ -259,6 +259,12 @@ void WLI::CStrip::DeallocAll() {
 	Imgs.clear();
 }
 
+//20250916
+
+void WLI::CStrip::DeallocAllCV() {
+	CVImgs.clear();
+}
+
 bool WLI::CStrip::HProfile(SFrng& F, WLI::FRP Ch, int y, SROI& R) {
 	if (Im16um.IsNull()) return false;
 	int wd = Im16um.GetWidth();
@@ -308,6 +314,121 @@ bool WLI::CStrip::VProfile(SFrng& F, WLI::FRP Ch, int x, SROI& R) {
 }
 
 bool WLI::CStrip::CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
+	// no sanity check from this point on
+	int sz = Strip.size();
+	int st = R.i1, ed = R.i2;
+	if (st < 0) { st = 0; ASSERT(0); }
+	if (ed > nSteps) { ed = nSteps; ASSERT(0); }
+	if ((ed - st) > nSteps) { ASSERT(0);  return false; }
+
+	//////////////////////////////////////////////////////////////////////////
+	// Initialization
+	double avew = 0, aver = 0, aveg = 0, aveb = 0;
+	SStat* pSt;
+	SIms** pI = &Imgs[st];
+	float* pX, * pZ1, * pZ2, * pZ3, * pZ4;
+
+	// background Image need to modify this also ARIF
+	bool bBg = false;
+	if (!ImBG.IsNull()) {
+		bBg = true;
+		COLORREF cr = ImBG.GetPixel(x, y);
+		aver = GetRValue(cr); aveg = GetGValue(cr); aveb = GetBValue(cr);
+		avew = (aver + 2 * aveg + aveb) / 4;
+	}
+
+	float v1, v2, v3, v4;
+	switch (Ch) {
+	case WLI::WHTA:
+		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
+		pZ1 = F.Z.Get(WLI::REDA, st, nSteps);
+		pZ2 = F.Z.Get(WLI::GRNA, st, nSteps);
+		pZ3 = F.Z.Get(WLI::BLUA, st, nSteps);
+		pZ4 = F.Z.Get(WLI::WHTA, st, nSteps);
+		for (int i = st; i < ed; i++, pI++, pX++, pZ1++, pZ2++, pZ3++, pZ4++) {
+			*pX = (*pI)->PzPos_um; 
+			COLORREF cr = (*pI)->GetPixRGB(x, y);
+			v1 = *pZ1 = GetRValue(cr);
+			v2 = *pZ2 = GetGValue(cr);
+			v3 = *pZ3 = GetBValue(cr);
+
+			switch (WhtCalc) {
+			case WLI::PCPTN:
+				v4 = *pZ4 = (sfR * v1 + sfG * v2 + sfB * v3);
+				break;
+			case WLI::R121:
+				v4 = *pZ4 = (v1 + 2 * v2 + v3) / 4.f;
+				break;
+			case WLI::R131:
+				v4 = *pZ4 = (v1 + 3 * v2 + v3) / 5.f;
+				break;
+			default:
+				v4 = *pZ4 = (v1 + v2 + v3) / 3.f;
+				break;
+			}
+			if (!bBg) avew += v4;
+			if (!bBg) aver += v1;
+			if (!bBg) aveg += v2;
+			if (!bBg) aveb += v3;
+		}
+		F.MaxMin(WLI::REDA, R, sz, true);
+		F.MaxMin(WLI::GRNA, R, sz, true);
+		F.MaxMin(WLI::BLUA, R, sz, true);
+		F.MaxMin(WLI::WHTA, R, sz, true);
+
+		pSt = &F.Z.St[int(REDA)];
+		if (bBg) pSt->fave = float(aver);
+		pSt++;
+		if (bBg) pSt->fave = float(aveg);
+		pSt++;
+		if (bBg) pSt->fave = float(aveb);
+		pSt++;
+		if (bBg) pSt->fave = float(avew);
+		break;
+	case WLI::REDA:
+		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
+		pZ1 = F.Z.Get(WLI::REDA, st, nSteps);
+		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) { 
+			*pX = (*pI)->PzPos_um;
+			float v = GetRValue((*pI)->GetPixRGB(x, y));
+			*pZ1 = v; //if (!bBg) aver += v;
+		}
+		F.MaxMin(WLI::REDA, R, sz, true);
+		pSt = &F.Z.St[int(REDA)];
+		if (bBg) pSt->fave = float(aver); //else pSt->fave = float(aver / (ed - st));
+		break;
+	case WLI::GRNA:
+		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
+		pZ1 = F.Z.Get(WLI::GRNA, st, nSteps);
+		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) {
+			*pX = (*pI)->PzPos_um;
+			float v = GetGValue((*pI)->GetPixRGB(x, y));
+			*pZ1 = v; //if (!bBg) aveg += v;
+		}
+		F.MaxMin(WLI::GRNA, R, sz, true);
+		pSt = &F.Z.St[int(GRNA)];
+		if (bBg) pSt->fave = float(aveg); //else pSt->fave = float(aveg / (ed - st));
+		break;
+	case WLI::BLUA:
+		pX = F.Z.Get(WLI::ZAXS, st, nSteps);
+		pZ1 = F.Z.Get(WLI::BLUA, st, nSteps);
+		for (int i = st; i < ed; i++, pI++, pX++, pZ1++) {
+			*pX = (*pI)->PzPos_um;
+			float v = GetBValue((*pI)->GetPixRGB(x, y));
+
+			*pZ1 = v; //if (!bBg) aveb += v;
+		}
+		F.MaxMin(WLI::BLUA, R, sz, true);
+		pSt = &F.Z.St[int(BLUA)];
+		if (bBg) pSt->fave = float(aveb); //else pSt->fave = float(aveb / (ed - st));
+		break;
+	default: assert(0); return false; break;
+	}
+	return true;
+}
+
+//20250916
+bool WLI::CStrip::CollectZCHCV(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	// no sanity check from this point on
 	//int sz = Strip.size(); //ARIF COMMENTED 20250916
 	int sz = Strip.sizeCV(); //20250916
@@ -862,7 +983,7 @@ bool WLI::CStrip::GenHMapV5CV(RCP::SRecipe& Rcp) {
 			SStat* pSt = &F.Z.St[Ch];
 			for (int x = 0; x < wd; x++) { // 05302023 - Mortuja
 				//for (int x = ICC.x1; x <= ICC.x2; x++) { // Width // 05302023 - Mortuja
-				CollectZCH(F, x, y, R, Ch);
+				CollectZCHCV(F, x, y, R, Ch);
 				if (!Rcp.bFindPChg) {
 					if (bPChg) idx = pSt->imn; else idx = pSt->imx;
 				}

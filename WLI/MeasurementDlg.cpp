@@ -12,6 +12,7 @@
 #include <thread>
 #include <MotionControlDlg.h> //Morsalinn
 #include <chrono> // Morsalinn
+#include "MTH/LSF3D.h"//20250916
 
 // MeasurementDlg dialog
 
@@ -99,6 +100,53 @@ void MeasurementDlg::OnBnClickedMeLoadrcp() {
 void MeasurementDlg::DataAcquisitionSimu() {
 	// 1. READ FILE AND PROVIDE Z POSITIONS
 	Strip.DeallocAll();
+	CString folder = L"C:/WLIN_MS/BMP/DATA/";
+	CString zFilePath = folder + L"DATA.csv";
+	std::string line;
+	std::ifstream zFile(zFilePath.GetString());
+	if (!zFile.is_open()) {
+		AfxMessageBox(L"Failed to open Z positions file", MB_ICONERROR);
+		return;
+	}
+	std::vector<float> zPositions;
+	std::getline(zFile, line); // Skip header line if exists
+	while (std::getline(zFile, line)) {
+		// Read z position from each line
+		std::istringstream iss(line);
+		std::string col1, col2;
+		if (std::getline(iss, col1, ',') && std::getline(iss, col2, ',')) {
+			try {
+				float z = std::stof(col2);
+				zPositions.push_back(z);
+			}
+			catch (const std::exception&) {
+			}
+		}
+	}
+
+	CString filePath;
+	IMGL::CIM tmpImg;
+
+	for (int i = 0; i < 222; ++i) {
+		filePath.Format(L"DATA_%d.BMP", i + 1);
+		filePath = folder + filePath; // Full path to the image file
+		//if (!tmpImg.Load(filePath)) { // Assuming IMGL::CIM::Load returns bool
+		if (tmpImg.Load(filePath) == E_FAIL) { // Assuming IMGL::CIM::Load returns bool
+			TRACE("Failed to load image: %ws\n", filePath.GetString());
+			continue;
+		}
+		WLI::SIms* pImN = Strip.NewImgs(zPositions[i]); // Use 0.0f or appropriate Z position
+		if (pImN) {
+			pImN->Im = tmpImg;
+			tmpImg.Detach();
+		}
+	}
+}
+
+//20250916
+void MeasurementDlg::DataAcquisitionSimuCV() {
+	// 1. READ FILE AND PROVIDE Z POSITIONS
+	Strip.DeallocAllCV();
 	std::string folder = "C:/WLIN_MS/BMP/DATA/";
 	std::string zFilePath = folder + "DATA.csv";
 	std::string line;
@@ -146,38 +194,188 @@ void MeasurementDlg::DataAcquisitionSimu() {
 	}
 }
 
+//20250916
+void MeasurementDlg::LevelCV(cv::Mat& ImCV) {
+	CLSF3D LSF3D;
+	int skip = 8;
+	for (int y = 0; y < ht; y += skip) {
+		float* row = ImCV.ptr<float>(y);
+		for (int x = 0; x < wd; x += skip) {
+			if (row[x]!= BADDATA) {
+				LSF3D.Input(x, y, row[x]);
+			}
+		}
+	}
+
+	// Normalize data: All points [3/10/2011 FSMT]
+	float fMin = FLT_MAX; float fMax = -(FLT_MAX - 1);
+	double dfA, dfB, dfC;
+	if (LSF3D.GetResult(dfA, dfB, dfC)) {
+
+		// Normalize data by subtracting fitted plane
+		float fMin = std::numeric_limits<float>::max();
+		float fMax = std::numeric_limits<float>::lowest();
+
+		for (int y = 0; y < ht; y++) {
+			float* row = ImCV.ptr<float>(y);
+			for (int x = 0; x < wd; x++) {
+				if (row[x] != BADDATA) {
+					float dfNorDist = row[x] - dfC - dfA * x - dfB * y;
+					if (dfNorDist > fMax) fMax = dfNorDist;
+					if (dfNorDist < fMin) fMin = dfNorDist;
+					row[x] = dfNorDist;
+				}
+			}
+		}
+		// Add offset to make all values positive
+		float off = std::abs(fMin);
+		for (int y = 0; y < ht; y++) {
+			float* row = ImCV.ptr<float>(y);
+			for (int x = 0; x < wd; x++) {
+				if (row[x]!=BADDATA) {
+					row[x] += off;
+				}
+			}
+		}
+	}
+}
+
+
+//20250916
+bool MeasurementDlg::Histo256(const cv::Mat& image) {
+	if (image.empty() || image.type() != CV_32F) return false;
+
+	// Clear histogram
+	for (int i = 0; i < 256; ++i) {
+		His5.His.push_back(0);
+	}
+	int ht = image.rows;
+	int wd = image.cols;
+
+	// Find min/max values
+	float mx = std::numeric_limits<float>::lowest();
+	float mn = std::numeric_limits<float>::max();
+
+	for (int y = 0; y < ht; y++) {
+		const float* row = image.ptr<float>(y);
+		for (int x = 0; x < wd; x++) {
+			if (row[x]!=BADDATA) {
+				if (row[x] > mx) mx = row[x];
+				if (row[x] < mn) mn = row[x];
+			}
+		}
+	}
+
+	if (mx == mn) return false;
+
+	His5.mx = mx;
+	His5.mn = mn;
+	His5.sf = His5.nbins / (mx - mn);
+
+	// Build histogram
+	for (int y = 0; y < ht; y++) {
+		const float* row = image.ptr<float>(y);
+		for (int x = 0; x < wd; x++) {
+			if (row[x] != BADDATA) {
+				int bin = static_cast<int>(His5.sf * (row[x] - mn));
+				// Clamp to valid range to prevent overflow
+				bin = max(0, min(His5.nbins - 1, bin));
+				His5.His[bin]++;
+			}
+		}
+	}
+
+	return true;
+}
 
 //20250916 
 void MeasurementDlg::Make24HStretchCV(cv::Mat& ImCV) {
-	CV_Assert(ImCV.type() == CV_32F || ImCV.type() == CV_64F);
+	//CV_Assert(ImCV.type() == CV_32F || ImCV.type() == CV_64F);
 
-	// 1. Find min/max, ignoring outliers if needed
-	double minVal, maxVal;
-	cv::minMaxLoc(ImCV, &minVal, &maxVal);
+	//// 1. Find min/max, ignoring outliers if needed
+	//double minVal, maxVal;
+	//cv::minMaxLoc(ImCV, &minVal, &maxVal);
 
-	// Optionally ignore outliers using percentiles (see below for advanced)
-	// For most cases, minMaxLoc is sufficient
+	//// Optionally ignore outliers using percentiles (see below for advanced)
+	//// For most cases, minMaxLoc is sufficient
 
-	// 2. Normalize to [0, 255]
-	cv::Mat normImg;
-	ImCV.convertTo(normImg, CV_8U, 255.0 / (maxVal - minVal), -minVal * 255.0 / (maxVal - minVal));
+	//// 2. Normalize to [0, 255]
+	//cv::Mat normImg;
+	//ImCV.convertTo(normImg, CV_8U, 255.0 / (maxVal - minVal), -minVal * 255.0 / (maxVal - minVal));
 
-	// 3. Convert to 3-channel grayscale
-	cv::Mat gray3ch;
-	cv::cvtColor(normImg, gray3ch, cv::COLOR_GRAY2BGR);
+	//// 3. Convert to 3-channel grayscale
+	//cv::Mat gray3ch;
+	//cv::cvtColor(normImg, gray3ch, cv::COLOR_GRAY2BGR);
 
-	// 4. Optionally, set invalid pixels (e.g., BADDATA) to blue
-	// If you have a mask of invalid pixels, set them:
-	// for (int y = 0; y < ImCV.rows; ++y)
-	//     for (int x = 0; x < ImCV.cols; ++x)
-	//         if (isBad(ImCV.at<float>(y, x))) gray3ch.at<cv::Vec3b>(y, x) = cv::Vec3b(255, 0, 0);
+	//// 4. Optionally, set invalid pixels (e.g., BADDATA) to blue
+	//// If you have a mask of invalid pixels, set them:
+	//// for (int y = 0; y < ImCV.rows; ++y)
+	////     for (int x = 0; x < ImCV.cols; ++x)
+	////         if (isBad(ImCV.at<float>(y, x))) gray3ch.at<cv::Vec3b>(y, x) = cv::Vec3b(255, 0, 0);
 
-	ImCV = gray3ch;
+	//ImCV = gray3ch;
+
+
+	if (ImCV.empty() || ImCV.type() != CV_32F) return;
+
+	// Create a working copy
+	cv::Mat workingImage = ImCV.clone();
+
+	// Level the image (remove tilt)
+	LevelCV(workingImage);
+
+	// Build histogram
+	if (!Histo256(workingImage)) return;
+
+	int ht = workingImage.rows;
+	int wd = workingImage.cols;
+
+	int lim = int(0.0000f * wd * ht);
+	int sum = 0, imx = 0, imn = 0;
+	for (int i = 0; i < 255; i++) {
+		sum += His5.His[i];
+		if (sum < lim) His5.His[i] = 0;
+		else { imn = i; break; }
+	}
+	sum = 0;
+	for (int i = 255; i >= 0; i--) {
+		sum += His5.His[i];
+		if (sum < lim) His5.His[i] = 0;
+		else { imx = i; break; }
+	}
+
+	cv::Mat outImg;
+	outImg.create(ht, wd, CV_8UC3);
+
+	//scaling factor
+	float sf = His5.sf;
+	float min = His5.mn;
+	float sf2 = 255.0f / static_cast<float>(imx - imn);
+
+	//convert to 24-bit RGB
+	for (int y = 0; y < ht; y++) {
+		const float* srcRow = workingImage.ptr<float>(y);
+		cv::Vec3b* dstRow = outImg.ptr<cv::Vec3b>(y);
+		for (int x = 0; x < wd; ++x) {
+			if (srcRow[x] != BADDATA) {
+				int scaledValue = static_cast<int>(sf2 * static_cast<int>(sf * (srcRow[x] - min)));
+				scaledValue = std::max(0, std::min(255, scaledValue));
+
+				dstRow[x] = cv::Vec3b(scaledValue, scaledValue, scaledValue);
+			}
+			else {
+				dstRow[x] = cv::Vec3b(255, 0, 0); // Mark bad data in blue
+			}
+		}
+	}
+
+	ImCV = outImg;
 }
 
 void MeasurementDlg::OnBnClickedMeasure() {
 	// TODO: Add your control notification handler code here
-	DataAcquisitionSimu();
+	//DataAcquisitionSimu();
+	DataAcquisitionSimuCV();
 	getHeightData();
 	return;
 
@@ -521,36 +719,40 @@ void MeasurementDlg::getHeightData(int idx) {
 	std::ofstream myfile(ResultPath);
 
 	// ARIF COMMENTED OUT FOR TESTING 20250916
-	//Strip.InitCalc();
-	//Strip.GenHMapV5(Rcp);
-	//IMGL::CIM16& Im = Strip.Im16um;
-	//Im.Make24H();
-	//Im.GetDim(wd, ht);
+	/*Strip.InitCalc();
+	Strip.GenHMapV5(Rcp);
+	IMGL::CIM16& Im = Strip.Im16um;
+	Im.Make24H();
+	Im.GetDim(wd, ht);*/
 	
 	//20250916 
 	Strip.InitCalcCV();
 	Strip.GenHMapV5CV(Rcp);
 	cv::Mat& ImCV = Strip.CVIm16um;
-	//Make24HStretchCV(ImCV); // Need to modify this to convert height map into 8-bit/3 channel image
+	Make24HStretchCV(ImCV); // Need to modify this to convert height map into 8-bit/3 channel image
 	wd = ImCV.cols;
 	ht = ImCV.rows;
 	
 
-	HeightData.clear();
+	//HeightData.clear();
+	HeightDataCV.clear();
 	for (int y = 0; y < ht - 1; y++) {
 		for (int x = 0; x < wd - 1; x++) {
 			//ARIF COMMENTED OUT FOR TESTING 20250916
 			/*float* p = Im.GetPixelAddress(x, y);
 			HeightData.push_back(*p);*/
-			HeightData.push_back(ImCV.at<float>(y, x));
+			float grayScale = (ImCV.at<cv::Vec3b>(y, x)[0]+ImCV.at<cv::Vec3b>(y,x)[1]+ImCV.at<cv::Vec3b>(y,x)[2])/3.0; // Assuming grayscale image, take the first channel
+			HeightDataCV.push_back(grayScale);
 		}
 	}
 
-	filter.removeOutliers(HeightData, wd, ht);
+	//filter.removeOutliers(HeightData, wd, ht);
+	filter.removeOutliers(HeightDataCV, wd, ht);
 
 	for (int y = 0; y < ht - 1; y++) {
 		for (int x = 0; x < wd - 1; x++) {
-			myfile << HeightData[y * (wd - 1) + x] << ',';
+			//myfile << HeightData[y * (wd - 1) + x] << ',';
+			myfile << HeightDataCV[y * (wd - 1) + x] << ',';
 		}
 		myfile << std::endl;
 	}

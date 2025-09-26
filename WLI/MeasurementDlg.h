@@ -24,6 +24,13 @@ typedef struct _RStats {
 	double fRa;
 }RSTATS;
 
+//20250916
+struct Histogram {
+	const int nbins = 256;
+	std::vector<int> His;
+	float mx = 0, mn = 0, sf = 0;
+};
+
 class MeasurementDlg : public CResizableDialog {
 	DECLARE_DYNAMIC(MeasurementDlg)
 public:
@@ -51,9 +58,13 @@ public:
 	afx_msg void OnBnClickedMeLoadrcp();
 	afx_msg void OnBnClickedMeasure();
 	void Make24HStretchCV(cv::Mat& ImCV);//20250916
+	void LevelCV(cv::Mat& ImCV);//20250916
+	bool Histo256(const cv::Mat& image);//20250916
 	void DataAcquisitionSimu();
+	void DataAcquisitionSimuCV();//20250916
 	void DataAcquisition();
 	std::vector<float>HeightData;
+	std::vector<float>HeightDataCV;//20250916
 	void getHeightData(int idx = -1);
 	void CalculateRoughnessStats(RSTATS* pStats);
 	void SpreadArray(double* p, int N1, int N2);
@@ -80,4 +91,6 @@ public:
 	Cfilters filter;
 	CProgressCtrl m_MeasurementProgress;
 	CStatic m_ProgressCount;
+public:
+	Histogram His5;// 20250916
 };

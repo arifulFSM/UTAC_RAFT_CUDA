@@ -46,6 +46,7 @@ namespace WLI {
 		//float sfR = 0.3333f, sfG = 0.3334f, sfB = 0.3333f; // Analytic
 		//////////////////////////////////////////////////////////////////////////
 		bool CollectZCH(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch);
+		bool CollectZCHCV(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch);//20250916
 		bool CollectZRG(SFrng& F, int x, int y, SROI& R);
 		bool CollectRGBW(SFrng& F, int x, int y, SROI& R);
 		bool CollectRGBWCV(SFrng& F, int x, int y, SROI& R);//20250916
@@ -66,6 +67,7 @@ namespace WLI {
 		bool InitCalc();
 		bool InitCalcCV();
 		void DeallocAll();
+		void DeallocAllCV();//20250916
 		CString GetReport();
 		bool GetDim(int& x, int& y, int& b);
 		bool GetDimCV(int& x, int& y, int& b);//20250916
