@@ -7,6 +7,7 @@
 #include "IM/fArchive.h"
 #include "MTH/Ang.h"
 #include "SRC/DOSUtil.h"
+#include <kernel.h>
 
 WLI::CStrip Strip;
 
@@ -969,6 +970,13 @@ bool WLI::CStrip::GenHMapV5CV(RCP::SRecipe& Rcp) {
 	//}
 
 
+	const int arraySize = 5;
+	const int a[arraySize] = { 1, 2, 3, 4, 5 };
+	const int b[arraySize] = { 10, 20, 30, 40, 50 };
+	int c[arraySize] = { 0 };
+
+	// Call CUDA function
+	cudaAdd(c, a, b, arraySize);
 
 	switch (Rcp.Mthd) {
 	case RCP::PS0:

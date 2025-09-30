@@ -212,9 +212,9 @@ void MeasurementDlg::LevelCV(cv::Mat& ImCV) {
 	double dfA, dfB, dfC;
 	if (LSF3D.GetResult(dfA, dfB, dfC)) {
 
-		// Normalize data by subtracting fitted plane
-		float fMin = std::numeric_limits<float>::max();
-		float fMax = std::numeric_limits<float>::lowest();
+		//// Normalize data by subtracting fitted plane
+		//float fMin = std::numeric_limits<float>::max();
+		//float fMax = std::numeric_limits<float>::lowest();
 
 		for (int y = 0; y < ht; y++) {
 			float* row = ImCV.ptr<float>(y);
@@ -237,6 +237,7 @@ void MeasurementDlg::LevelCV(cv::Mat& ImCV) {
 				}
 			}
 		}
+		fMax += off; fMin += off;
 	}
 }
 
@@ -253,8 +254,8 @@ bool MeasurementDlg::Histo256(const cv::Mat& image) {
 	int wd = image.cols;
 
 	// Find min/max values
-	float mx = std::numeric_limits<float>::lowest();
-	float mn = std::numeric_limits<float>::max();
+	float mx = image.at<float>(0,0);
+	float mn = image.at<float>(0,0);
 
 	for (int y = 0; y < ht; y++) {
 		const float* row = image.ptr<float>(y);
@@ -278,7 +279,6 @@ bool MeasurementDlg::Histo256(const cv::Mat& image) {
 		for (int x = 0; x < wd; x++) {
 			if (row[x] != BADDATA) {
 				int bin = static_cast<int>(His5.sf * (row[x] - mn));
-				// Clamp to valid range to prevent overflow
 				bin = max(0, min(His5.nbins - 1, bin));
 				His5.His[bin]++;
 			}

@@ -22,10 +22,14 @@ extern "C" void cudaAdd(int* c, const int* a, const int* b, size_t size) {
 	cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
 
 	// Launch a kernel on the GPU with one thread for each element
-	//addKernel <<<1, size >>> (dev_c, dev_a, dev_b);
+	addKernel <<<1, size >>> (dev_c, dev_a, dev_b);
 
 	//	copy output vector from GPU buffer to host memory
 	cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
 
+	// Clean up
+	cudaFree(dev_c);
+	cudaFree(dev_a);
+	cudaFree(dev_b);
 
 }
