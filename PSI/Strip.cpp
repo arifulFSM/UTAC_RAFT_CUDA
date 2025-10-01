@@ -443,7 +443,7 @@ bool WLI::CStrip::CollectZCHCV(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 	double avew = 0, aver = 0, aveg = 0, aveb = 0;
 	SStat* pSt;
 	//SIms** pI = &Imgs[st]; //ARIF COMMENTED 20250916
-	std::pair<cv::Mat,float>* pICV =& CVImgs[st]; //.first; //20250916
+	std::pair<cv::Mat,float>* pICV =& CVImgs[st]; //20250916
 	float* pX, * pZ1, * pZ2, * pZ3, * pZ4;
 
 	// background Image need to modify this also ARIF
@@ -475,7 +475,6 @@ bool WLI::CStrip::CollectZCHCV(SFrng& F, int x, int y, SROI& R, WLI::FRP Ch) {
 			*pX = (*pICV).second;
 			cv::Vec3b bgrPixel = CVImgs[i].first.at<cv::Vec3b>(y, x);
 			COLORREF cr = RGB(bgrPixel[2], bgrPixel[1], bgrPixel[0]);
-			// collect rgb data in a points
 			v1 = *pZ1 = GetRValue(cr);
 			v2 = *pZ2 = GetGValue(cr);
 			v3 = *pZ3 = GetBValue(cr);
@@ -942,7 +941,7 @@ bool WLI::CStrip::GenHMapV5(RCP::SRecipe& Rcp) {
 bool WLI::CStrip::GenHMapV5CV(RCP::SRecipe& Rcp) {
 	//int sz = size();
 	int sz = sizeCV();
-	if (!Im16um.Create(wd, ht)) return false;
+	//if (!Im16um.Create(wd, ht)) return false;
 	CVIm16um = cv::Mat::zeros(ht, wd, CV_32F);
 
 	WLI::SPSpar PsP;

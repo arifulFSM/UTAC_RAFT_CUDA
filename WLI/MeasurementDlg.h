@@ -65,6 +65,7 @@ public:
 	void DataAcquisition();
 	std::vector<float>HeightData;
 	std::vector<float>HeightDataCV;//20250916
+	void getHeightDataCV(int idx = -1);//20250916
 	void getHeightData(int idx = -1);
 	void CalculateRoughnessStats(RSTATS* pStats);
 	void SpreadArray(double* p, int N1, int N2);
